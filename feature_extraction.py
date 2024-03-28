@@ -11,8 +11,20 @@ def featureExtraction(left_img, right_img):
     right_keypoints, right_desc = orb.detectAndCompute(right_img,None)
 
     # Matching keypoints
-    matcher = cv2.BFMatcher()
-    matches = matcher.match(left_desc, right_desc)
+    FLANN_INDEX_LSH = 6
+
+    index_params = dict(algorithm = FLANN_INDEX_LSH,
+                        table_number = 6,  
+                        key_size = 12,   
+                        multi_probe_level = 1)  
+    
+    search_params = dict(checks=50)  
+    
+    flann = cv2.FlannBasedMatcher(index_params, search_params)
+
+    matches = flann.match(left_desc, right_desc)
+
+    matches = sorted(matches, key = lambda x:x.distance)
 
     feature_points = []   
     for m in matches:
