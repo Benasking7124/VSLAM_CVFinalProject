@@ -31,13 +31,24 @@ def featureExtraction(left_img, right_img):
     matches = flann.match(left_desc, right_desc)
     matches = sorted(matches, key = lambda x: x.distance)
 
-    # Compute Feature Points
+    # Compute Feature Points and Disparity for all Matches
     feature_points = []   
+    disparity = []
+
+    # For all Matches
     for m in matches:
+
+        # Get the Indices of Matches
         left_index = m.queryIdx
         right_index = m.trainIdx
-        feature_points.append([left_keypoints[left_index].pt[0], left_keypoints[left_index].pt[1], right_keypoints[right_index].pt[0], right_keypoints[right_index].pt[1], (left_keypoints[left_index].pt[0] - right_keypoints[right_index].pt[0])])
-    feature_points = np.array(feature_points)
 
-    # Return Feature Points
-    return feature_points
+        # Compute Feature Points and Disparity
+        feature_points.append([left_keypoints[left_index].pt[0], left_keypoints[left_index].pt[1], right_keypoints[right_index].pt[0], right_keypoints[right_index].pt[1]])
+        disparity.append([left_keypoints[left_index].pt[0] - right_keypoints[right_index].pt[0]])
+    
+    # Convert into Numpy Array
+    feature_points = np.array(feature_points)
+    disparity = np.array(disparity)
+
+    # Return Feature Points and Disparity
+    return feature_points, disparity

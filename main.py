@@ -1,16 +1,18 @@
 # Import Necessary Libraries
 from perform_yolo import perform_yolo_on_images
 from feature_extraction import featureExtraction
+from bounding_box_association import BoundingBoxAssociation
 from ultralytics import YOLO
 import cv2
+import time
 import os
 
 
 if __name__ == "__main__":
 
     # Get the Folders for Left & Right Stereo Images
-    left_images_folder = 'Dataset_2/Left_Images/'
-    right_images_folder = 'Dataset_2/Right_Images/'
+    left_images_folder = 'Dataset_1/Left_Images/'
+    right_images_folder = 'Dataset_1/Right_Images/'
 
     # Get the Images Path list
     left_images = os.listdir(left_images_folder)
@@ -36,9 +38,14 @@ if __name__ == "__main__":
         left_image = cv2.resize(left_image, [650, 350])
         right_image = cv2.resize(right_image, [650, 350])
 
-        #################### Perform YOLO on Both Images ###################
+        ########################### Perform YOLO on Both Images ########################
         left_boxes, right_boxes = perform_yolo_on_images(model, left_image, right_image)
         
-        #################### Extract FeaturePoints from Both Images ####################
-        featurePoints = featureExtraction(left_image, right_image)
+        ############## Extract FeaturePoints & Disparity from Both Images ##############
+        featurePoints, disparity = featureExtraction(left_image, right_image)
+
+        ###################### Perform Bounding Box Association ########################
+        BoundingBoxAssociation(left_boxes, right_boxes, featurePoints)
+        time.sleep(1000)
+        break
         
