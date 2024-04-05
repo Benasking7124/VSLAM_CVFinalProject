@@ -2,7 +2,7 @@
 from perform_yolo import perform_yolo_on_images
 from feature_extraction import featureExtraction
 from bounding_box_association import BoundingBoxAssociation
-from depth_calculation import get_filtered_feature_points
+from filter_featurepoints import filter_featurepointsbydepth
 from ultralytics import YOLO
 import cv2
 import time
@@ -14,17 +14,14 @@ if __name__ == "__main__":
     # Get the Folders for Left & Right Stereo Images
     left_images_folder = 'Dataset_2/Left_Images/'
     right_images_folder = 'Dataset_2/Right_Images/'
-    depth_maps_folder = 'Dataset_2/Depth_Maps/'
 
     # Get the Images Path list
     left_images = os.listdir(left_images_folder)
     right_images = os.listdir(right_images_folder)
-    depth_maps = os.listdir(depth_maps_folder)
 
     # Get the Path of Images
     left_images = [os.path.abspath(left_images_folder + '/' + left_image) for left_image in left_images]
     right_images = [os.path.abspath(right_images_folder + '/' + right_image) for right_image in right_images]
-    depth_maps = [os.path.abspath(depth_maps_folder + '/' + depth_map) for depth_map in depth_maps]
 
     # Load the YOLOv8 Pretrained Model
     model = YOLO('yolov8n.pt')
@@ -37,12 +34,10 @@ if __name__ == "__main__":
         # Read the Images
         left_image = cv2.imread(left_images[ind])
         right_image = cv2.imread(right_images[ind])
-        depth_map = cv2.imread(depth_maps[ind], cv2.IMREAD_ANYDEPTH)
 
         # Resize the Images
         left_image = cv2.resize(left_image, [650, 350])
         right_image = cv2.resize(right_image, [650, 350])
-        depth_map = cv2.resize(depth_map, [650, 350])
 
         ########################### Perform YOLO on Both Images ########################
         left_boxes, right_boxes = perform_yolo_on_images(model, left_image, right_image)
@@ -51,7 +46,7 @@ if __name__ == "__main__":
         featurePoints, disparity = featureExtraction(left_image, right_image)
 
         ######################## Remove Static using Depth map #################
-        filteredFeaturePoints = get_filtered_feature_points(featurePoints, depth_map)
+        filteredFeaturePoints = filter_featurepointsbydepth(featurePoints,left_image, right_image)
         ###################### Perform Bounding Box Association ########################
         BoundingBoxAssociation(left_boxes, right_boxes, filteredFeaturePoints)
         
