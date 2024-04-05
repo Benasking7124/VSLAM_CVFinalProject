@@ -2,6 +2,7 @@
 from perform_yolo import perform_yolo_on_images
 from feature_extraction import featureExtraction
 from bounding_box_association import BoundingBoxAssociation
+from depth_calculation import get_filtered_feature_points
 from ultralytics import YOLO
 import cv2
 import time
@@ -36,7 +37,7 @@ if __name__ == "__main__":
         # Read the Images
         left_image = cv2.imread(left_images[ind])
         right_image = cv2.imread(right_images[ind])
-        depth_map = cv2.imread(depth_maps[ind])
+        depth_map = cv2.imread(depth_maps[ind], cv2.IMREAD_ANYDEPTH)
 
         # Resize the Images
         left_image = cv2.resize(left_image, [650, 350])
@@ -50,8 +51,7 @@ if __name__ == "__main__":
         featurePoints, disparity = featureExtraction(left_image, right_image)
 
         ######################## Remove Static using Depth map #################
-
-
+        filteredFeaturePoints = get_filtered_feature_points(featurePoints, depth_map)
         ###################### Perform Bounding Box Association ########################
-        BoundingBoxAssociation(left_boxes, right_boxes, featurePoints)
+        BoundingBoxAssociation(left_boxes, right_boxes, filteredFeaturePoints)
         
