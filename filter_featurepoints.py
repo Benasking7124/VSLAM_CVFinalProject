@@ -10,7 +10,7 @@ def filter_featurepointsbydepth(featurePoints,left_image, right_image):
 
     # Compute Disparity and Depth Map
     stereo = cv2.StereoBM_create(numDisparities=16, blockSize=15)
-    disparity_map = stereo.compute(left_image, right_image)
+    disparity_map = stereo.compute(cv2.cvtColor(left_image, cv2.COLOR_BGR2GRAY), cv2.cvtColor(right_image, cv2.COLOR_BGR2GRAY))
 
     disparity_map[disparity_map == 0] = 0.1
     depth_map = (focal_length * baseline) / disparity_map
