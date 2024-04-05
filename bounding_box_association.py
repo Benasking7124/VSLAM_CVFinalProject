@@ -76,7 +76,7 @@ def BoundingBoxAssociation(left_boxes, right_boxes, feature_points):
         objects_on_right_image['Bounding_Boxes']['Feature_Points'].append(points)
         objects_on_right_image['Bounding_Boxes']['Number_of_Feature_Points'].append(len(points))
     
-    print(objects_on_left_image['Bounding_Boxes'])
-    print(objects_on_right_image['Bounding_Boxes'])
+    print('L', objects_on_left_image['Bounding_Boxes']['Number_of_Feature_Points'])
+    print('R', objects_on_right_image['Bounding_Boxes']['Number_of_Feature_Points'])
     
     return 1
