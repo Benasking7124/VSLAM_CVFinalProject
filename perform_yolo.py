@@ -4,7 +4,7 @@ import cv2
 
 
 # Define a Function to Perform YOLO on Images
-def perform_yolo_on_images(model, left_image, right_image):
+def PerformYolo(model, left_image, right_image):
             
     # Predict the Objects in Left and Right Images using Model
     detections_left_image = model(left_image, verbose = False)

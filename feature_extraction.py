@@ -5,7 +5,7 @@ import cv2
 
 
 # Define a Function to Extract Feature Points
-def featureExtraction(left_img, right_img):
+def FeatureExtraction(left_img, right_img):
 
     # Create an ORB Object to Extract Keypoints
     orb = cv2.ORB_create() 
@@ -45,7 +45,7 @@ def featureExtraction(left_img, right_img):
         # Compute Feature Points and Disparity
         feature_points.append([left_keypoints[left_index].pt[0], left_keypoints[left_index].pt[1], right_keypoints[right_index].pt[0], right_keypoints[right_index].pt[1]])
         disparity.append([left_keypoints[left_index].pt[0] - right_keypoints[right_index].pt[0]])
-    
+
     # Convert into Numpy Array
     feature_points = np.array(feature_points)
     disparity = np.array(disparity)
