@@ -19,7 +19,7 @@ def check_point_in_bbox(bbox, point):
     
 
 # Define a Function to Associate Bounding Boxes between Left and Right images
-def BoundingBoxAssociation(left_boxes, right_boxes, feature_points):
+def BoundingBoxAssociation(left_image, right_image, left_boxes, right_boxes, feature_points):
 
     # Initialise Empty Dictionary to store Objects in Left and Right Images
     objects_on_left_image = dict()
@@ -75,5 +75,6 @@ def BoundingBoxAssociation(left_boxes, right_boxes, feature_points):
         # Store the Feature Points for that Bounding Box
         objects_on_right_image['Bounding_Boxes']['Feature_Points'].append(points)
         objects_on_right_image['Bounding_Boxes']['Number_of_Feature_Points'].append(len(points))
-      
-    return 1
+    
+    # Return the Objects from Both images
+    return objects_on_left_image, objects_on_right_image

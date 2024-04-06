@@ -3,6 +3,7 @@ from perform_yolo import PerformYolo
 from feature_extraction import FeatureExtraction
 from bounding_box_association import BoundingBoxAssociation
 from filter_feature_points import FilterFeaturePoints
+from display_images import DisplayImages
 
 # Import Necessary Libraries
 from ultralytics import YOLO
@@ -53,9 +54,11 @@ if __name__ == "__main__":
         ############## Extract FeaturePoints & Disparity from Both Images ##############
         feature_points, disparity = FeatureExtraction(left_image, right_image)
 
-        ######################## Remove Static Features using Depth map #################
+        ######################## Remove Static Features using Depth map ################
         filtered_feature_points = FilterFeaturePoints(feature_points, depth_map, depth_threshold = 1000)
 
         ###################### Perform Bounding Box Association ########################
-        BoundingBoxAssociation(left_boxes, right_boxes, filtered_feature_points)
-        
+        BoundingBoxAssociation(left_image, right_image, left_boxes, right_boxes, filtered_feature_points)
+
+        ############################## Display both the Images #########################
+        DisplayImages(left_image, right_image, left_boxes, right_boxes, filtered_feature_points)

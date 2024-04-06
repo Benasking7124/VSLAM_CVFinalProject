@@ -27,8 +27,6 @@ def PerformYolo(model, left_image, right_image):
             # Get the Coordinates of Bounding Box of Object and Plot on Frame
             x1, y1, x2, y2 = int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3])
             left_bboxes.append([x1, y1, x2, y2])
-            cv2.rectangle(left_image, (x1, y1), (x2, y2), (0, 255, 0), 1)
-
 
     # Visualise Bounding Boxes for all Detected Objects in Right Image
     for obj in detections_right_image:
@@ -43,14 +41,6 @@ def PerformYolo(model, left_image, right_image):
             # Get the Coordinates of Bounding Box of Object and Plot on Frame
             x1, y1, x2, y2 = int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3])
             right_bboxes.append([x1, y1, x2, y2])
-            cv2.rectangle(right_image, (x1, y1), (x2, y2), (0, 255, 0), 1)
 
-
-    # Display the Detected Objects on Both Images
-    cv2.imshow('YOLO on Left_Image', left_image)
-    cv2.waitKey(1)
-    cv2.imshow('YOLO on Right_Image', right_image)
-    cv2.waitKey(1)
-    
     # Return the Bounding Boxes
     return left_bboxes, right_bboxes
