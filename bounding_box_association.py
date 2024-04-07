@@ -1,9 +1,6 @@
 # Import Necessary Libraries
-import matplotlib.pyplot as plt
-import numpy as np
-import collections
-import cv2
-import time
+from collections import Counter
+import itertools
 
 
 # Define a Function to Check if a Feature Point falls inside Bounding Box
@@ -20,17 +17,36 @@ def check_point_in_bbox(bbox, point):
         return False
     
 
-# Define a Function to Check if Features are Matching
-def is_Matching_Features(feature_points, left_feature, right_feature):
+# Define a Function to Count Matching Features
+def Count_Matching_Features(feature_points, left_features, right_features):
     
-    # Create Feature from Left and Right Features
-    feature = [left_feature[0], left_feature[1], right_feature[0], right_feature[1]]
-    
-    # Check if Feature is present in List of Feature Points
-    for point in feature_points:
-        if collections.Counter(point) == collections.Counter(feature):
-            return True
-    return False
+    # Convert feature_points to a set of tuples
+    feature_points_set = {tuple(point) for point in feature_points}
+
+    # Convert left_features and right_features to sets of tuples
+    left_features_set = {tuple(feature[:2]) for feature in left_features}
+    right_features_set = {tuple(feature[:2]) for feature in right_features}
+
+    # Calculate the intersection of left_features_set and right_features_set
+    matching_pairs = left_features_set & right_features_set
+
+    # Initialize match count
+    match_count = 0
+
+    # Iterate over the matching pairs
+    for left_feature in matching_pairs:
+        left_x, left_y = left_feature
+
+        # Iterate over feature_points_set to find matching pairs
+        for right_feature in right_features_set:
+            right_x, right_y = right_feature
+
+            # Check if the matching pair exists in feature_points_set
+            if (left_x, left_y, right_x, right_y) in feature_points_set:
+                match_count += 1
+
+    # Return the match count
+    return match_count
 
 
 # Define a Function to Associate Bounding Boxes between Left and Right images
@@ -101,22 +117,11 @@ def BoundingBoxAssociation(left_image, right_image, left_boxes, right_boxes, fea
         # For every Bounding box in Right Image
         for right_bbox_ind in range(len(objects_on_right_image['Bounding_Boxes']['Coordinates'])):
 
-            # Get the Feature Points and Initialise Matches Count
+            # Get the Feature Points
             right_features = objects_on_right_image['Bounding_Boxes']['Feature_Points'][right_bbox_ind]
-            match = 0
-
-            # For every Feature point in Left image
-            for left_feature in left_features:
-
-                # For every Feature point in Right image
-                for right_feature in right_features:
-
-                    # Check if the Features are Matching Features
-                    if is_Matching_Features(feature_points, left_feature, right_feature):
-                        match += 1
-        
+            
             # Append the Matches count
-            matches.append(match)
+            matches.append(Count_Matching_Features(feature_points, left_features, right_features))
         
         # Get the Highest Match count and its Index if count > 0
         max_match = max(matches)

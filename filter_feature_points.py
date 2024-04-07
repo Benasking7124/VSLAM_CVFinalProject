@@ -16,8 +16,9 @@ def FilterFeaturePoints(featurePoints, depth_map, depth_threshold):
         left_x, left_y, right_x, right_y = int(point[0]), int(point[1]), int(point[2]), int(point[3])
         
         # Get Depth and Compare with Threshold to Filter
-        depth = depth_map[left_y, left_x]
-        if depth < depth_threshold:
+        depth_pos = [int((left_x + right_x) / 2), int((left_y + right_y) / 2)]
+        depth = depth_map[depth_pos[1], depth_pos[0]]
+        if depth > depth_threshold:
             filtered_feature_points.append(point)
     
     # Return the Filtered Feature Points
