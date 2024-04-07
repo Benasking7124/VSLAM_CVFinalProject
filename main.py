@@ -58,7 +58,7 @@ if __name__ == "__main__":
         filtered_feature_points = FilterFeaturePoints(feature_points, depth_map, depth_threshold = 1000)
 
         ###################### Perform Bounding Box Association ########################
-        BoundingBoxAssociation(left_image, right_image, left_boxes, right_boxes, filtered_feature_points)
+        associated_bounding_boxes = BoundingBoxAssociation(left_image, right_image, left_boxes, right_boxes, filtered_feature_points)
 
         ############################## Display both the Images #########################
-        DisplayImages(left_image, right_image, left_boxes, right_boxes, filtered_feature_points)
+        DisplayImages(left_image, right_image, filtered_feature_points, associated_bounding_boxes)
