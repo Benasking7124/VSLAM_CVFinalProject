@@ -1,7 +1,3 @@
-# Import Necessary Libraries
-from collections import Counter
-import itertools
-
 
 # Define a Function to Check if a Feature Point falls inside Bounding Box
 def check_point_in_bbox(bbox, point):

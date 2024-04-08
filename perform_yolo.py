@@ -1,11 +1,14 @@
 # Import Necessary Libraries
+from ultralytics import YOLO
 import numpy as np
-import cv2
 
 
 # Define a Function to Perform YOLO on Images
-def PerformYolo(model, left_image, right_image):
-            
+def PerformYolo(left_image, right_image):
+
+    # Load the YOLOv8 Pretrained Model
+    model = YOLO('yolov8n.pt')
+
     # Predict the Objects in Left and Right Images using Model
     detections_left_image = model(left_image, verbose = False)
     detections_right_image = model(right_image, verbose = False)

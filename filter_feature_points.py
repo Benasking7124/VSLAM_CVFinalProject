@@ -1,13 +1,13 @@
 # Import Necessary Libraries
 import numpy as np
-import cv2
 
 
 # Define a Function to Filter Feature Points by Depth
 def FilterFeaturePoints(featurePoints, depth_map, depth_threshold):
     
-    # Initialise List to Store Filtered Points
-    filtered_feature_points = []
+    # Initialise List to Store Static & Dynamic Feature Points
+    static_feature_points = []
+    dynamic_feature_points = []
     
     # For every Feature Point
     for point in featurePoints:
@@ -18,8 +18,14 @@ def FilterFeaturePoints(featurePoints, depth_map, depth_threshold):
         # Get Depth and Compare with Threshold to Filter
         depth_pos = [int((left_x + right_x) / 2), int((left_y + right_y) / 2)]
         depth = depth_map[depth_pos[1], depth_pos[0]]
-        if depth > depth_threshold:
-            filtered_feature_points.append(point)
+        if depth < depth_threshold:
+            dynamic_feature_points.append(point)
+        else:
+            static_feature_points.append(point)
     
-    # Return the Filtered Feature Points
-    return np.array(filtered_feature_points)
+    # Convert into Numpy Array
+    static_feature_points = np.array(static_feature_points)
+    dynamic_feature_points = np.array(dynamic_feature_points)
+    
+    # Return the Static & Dynamic Feature Points
+    return static_feature_points, dynamic_feature_points

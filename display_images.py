@@ -1,5 +1,4 @@
 # Import Necessary Libraries
-import numpy as np
 import cv2
 
 
