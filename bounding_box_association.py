@@ -46,7 +46,7 @@ def Count_Matching_Features(feature_points, left_features, right_features):
 
 
 # Define a Function to Associate Bounding Boxes between Left and Right images
-def BoundingBoxAssociation(left_image, right_image, left_boxes, right_boxes, feature_points):
+def BoundingBoxAssociation(left_boxes, right_boxes, feature_points):
 
     # Initialise Empty Dictionary to store Objects in Left and Right Images
     objects_on_left_image = dict()
