@@ -50,10 +50,11 @@ if __name__ == "__main__":
         feature_points, disparity = FeatureExtraction(left_image, right_image)
 
         ######################## Remove Static Features using Depth map ################
-        static_feature_points, dynamic_feature_points = FilterFeaturePoints(feature_points, depth_map, depth_threshold = 10000)
+        static_feature_points, dynamic_feature_points = FilterFeaturePoints(feature_points, depth_map, depth_threshold = 5000)
 
         ###################### Perform Bounding Box Association ########################
         associated_bounding_boxes = BoundingBoxAssociation(left_boxes, right_boxes, dynamic_feature_points)
 
         ############################## Display both the Images #########################
-        DisplayImages(left_image, right_image, dynamic_feature_points, associated_bounding_boxes)
+        DisplayImages(left_image, right_image, static_feature_points, dynamic_feature_points, associated_bounding_boxes)
+        

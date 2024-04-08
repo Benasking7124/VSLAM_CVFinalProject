@@ -1,3 +1,6 @@
+# Import Necessary Libraries
+import collections
+
 
 # Define a Function to Check if a Feature Point falls inside Bounding Box
 def check_point_in_bbox(bbox, point):
@@ -13,33 +16,31 @@ def check_point_in_bbox(bbox, point):
         return False
     
 
+# Define a Function to Check if Features are Matching on Both Images
+def is_Matching_Features(feature_points, left_feature, right_feature):
+
+    # Create Feature from Left and Right Features
+    feature = [left_feature[0], left_feature[1], right_feature[0], right_feature[1]]
+
+    # Check if Feature is present in List of Feature Points
+    for point in feature_points:
+        if collections.Counter(point) == collections.Counter(feature):
+            return True
+    return False
+
+
 # Define a Function to Count Matching Features
 def Count_Matching_Features(feature_points, left_features, right_features):
     
-    # Convert feature_points to a set of tuples
-    feature_points_set = {tuple(point) for point in feature_points}
-
-    # Convert left_features and right_features to sets of tuples
-    left_features_set = {tuple(feature[:2]) for feature in left_features}
-    right_features_set = {tuple(feature[:2]) for feature in right_features}
-
-    # Calculate the intersection of left_features_set and right_features_set
-    matching_pairs = left_features_set & right_features_set
-
     # Initialize match count
     match_count = 0
 
-    # Iterate over the matching pairs
-    for left_feature in matching_pairs:
-        left_x, left_y = left_feature
-
-        # Iterate over feature_points_set to find matching pairs
-        for right_feature in right_features_set:
-            right_x, right_y = right_feature
-
-            # Check if the matching pair exists in feature_points_set
-            if (left_x, left_y, right_x, right_y) in feature_points_set:
+    # Count Matching Features
+    for left_feature in left_features:
+        for right_feature in right_features:
+            if is_Matching_Features(feature_points, left_feature, right_feature):
                 match_count += 1
+                break
 
     # Return the match count
     return match_count
@@ -65,6 +66,10 @@ def BoundingBoxAssociation(left_boxes, right_boxes, feature_points):
     # Initialise a List to store Feature Points for Corresponding Bounding Boxes
     objects_on_left_image['Bounding_Boxes']['Feature_Points'] = []
     objects_on_right_image['Bounding_Boxes']['Feature_Points'] = []
+
+    # Initialise a List to store Number of Matching Features for both Frames
+    objects_on_left_image['Number_of_Matching_Features'] = []
+    objects_on_right_image['Number_of_Matching_Features'] = []
 
     # Check every Bounding Box Coordinates in Left Image
     for bbox in objects_on_left_image['Bounding_Boxes']['Coordinates']:
@@ -99,33 +104,58 @@ def BoundingBoxAssociation(left_boxes, right_boxes, feature_points):
         # Store the Feature Points for that Bounding Box
         objects_on_right_image['Bounding_Boxes']['Feature_Points'].append(points)
     
+    # Delete Feature Points from Objects
+    del objects_on_left_image['Feature_Points']
+    del objects_on_right_image['Feature_Points']
+
+
+    # For every Feature Points in Left Image
+    for left_features in objects_on_left_image['Bounding_Boxes']['Feature_Points']:
+
+        # Initialise Matches Counts
+        matches = []
+
+        # For every Feature Points in Right Image
+        for right_features in objects_on_right_image['Bounding_Boxes']['Feature_Points']:
+
+            # Append the Matches count
+            matches.append(Count_Matching_Features(feature_points, left_features, right_features))
+        
+        # Store the Number of Matching Features for Left Image
+        objects_on_left_image['Number_of_Matching_Features'].append(matches)
+    
+
+    # For every Feature Points in Right Image
+    for right_features in objects_on_right_image['Bounding_Boxes']['Feature_Points']:
+
+        # Initialise Matches Counts
+        matches = []
+
+        # For every Feature Points in Left Image
+        for left_features in objects_on_left_image['Bounding_Boxes']['Feature_Points']:
+
+            # Append the Matches count
+            matches.append(Count_Matching_Features(feature_points, right_features, left_features))
+        
+        # Store the Number of Matching Features for Right Image
+        objects_on_right_image['Number_of_Matching_Features'].append(matches)
+    
 
     # Initialise List to store Associated Bounding Boxes
     associated_bounding_boxes = []
 
-    # For every Bounding box in Left Image
-    for left_bbox_ind in range(len(objects_on_left_image['Bounding_Boxes']['Coordinates'])):
+    # For every Matching Feature in Left Objects
+    for left_match_index in range(len(objects_on_left_image['Number_of_Matching_Features'])):
 
-        # Get the Feature Points and Initialise Matches Count for Features
-        left_features = objects_on_left_image['Bounding_Boxes']['Feature_Points'][left_bbox_ind]
-        matches = []
+        # Get the Max Match count and its Index
+        max_match = max(objects_on_left_image['Number_of_Matching_Features'][left_match_index])
 
-        # For every Bounding box in Right Image
-        for right_bbox_ind in range(len(objects_on_right_image['Bounding_Boxes']['Coordinates'])):
+        # Get its Index
+        max_match_index = objects_on_left_image['Number_of_Matching_Features'][left_match_index].index(max_match)
 
-            # Get the Feature Points
-            right_features = objects_on_right_image['Bounding_Boxes']['Feature_Points'][right_bbox_ind]
-            
-            # Append the Matches count
-            matches.append(Count_Matching_Features(feature_points, left_features, right_features))
-        
-        # Get the Highest Match count and its Index if count > 0
-        max_match = max(matches)
-        if max_match > 0:
-            max_match_index = matches.index(max_match)
-
-            # Append the Matching Bounding Boxes
-            associated_bounding_boxes.append([objects_on_left_image['Bounding_Boxes']['Coordinates'][left_bbox_ind], objects_on_right_image['Bounding_Boxes']['Coordinates'][max_match_index]])
+        # Check if the Right Object also has the same Pair
+        if left_match_index == objects_on_right_image['Number_of_Matching_Features'][max_match_index].index(max(objects_on_right_image['Number_of_Matching_Features'][max_match_index])):
+            associated_bounding_boxes.append([objects_on_left_image['Bounding_Boxes']['Coordinates'][left_match_index], objects_on_right_image['Bounding_Boxes']['Coordinates'][max_match_index]])
     
     # Return Associated Bounding Boxes
     return associated_bounding_boxes
