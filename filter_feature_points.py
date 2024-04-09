@@ -19,9 +19,9 @@ def FilterFeaturePoints(featurePoints, depth_map, depth_threshold):
         depth_pos = [int((left_x + right_x) / 2), int((left_y + right_y) / 2)]
         depth = depth_map[depth_pos[1], depth_pos[0]]
         if depth < depth_threshold:
-            dynamic_feature_points.append(point)
+            dynamic_feature_points.append([left_x, left_y, right_x, right_y, depth])
         else:
-            static_feature_points.append(point)
+            static_feature_points.append([left_x, left_y, right_x, right_y, depth])
     
     # Convert into Numpy Array
     static_feature_points = np.array(static_feature_points)
