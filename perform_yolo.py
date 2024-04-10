@@ -1,6 +1,7 @@
 # Import Necessary Libraries
 from ultralytics import YOLO
 import numpy as np
+import torch
 
 
 # Define a Function to Perform YOLO on Images
@@ -8,6 +9,8 @@ def PerformYolo(left_image, right_image):
 
     # Load the YOLOv8 Pretrained Model
     model = YOLO('yolov8n.pt')
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    model.to(device)
 
     # Predict the Objects in Left and Right Images using Model
     detections_left_image = model(left_image, verbose = False)
