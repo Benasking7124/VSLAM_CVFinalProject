@@ -31,6 +31,17 @@ def FeatureExtraction(left_img, right_img):
     matches = flann.match(left_desc, right_desc)
     matches = sorted(matches, key = lambda x: x.distance)
 
+    # BFM
+    # bfm = cv2.BFMatcher()
+    # matches = bfm.match(left_desc, right_desc)
+    # matches = sorted(matches, key = lambda x: x.distance)
+    # match_img = cv2.drawMatches(left_img, left_keypoints, 
+    #                             right_img, right_keypoints, matches,None)
+    
+    # cv2.imshow('matches', match_img)
+    # cv2.waitKey()
+
+
     # Compute Feature Points and Disparity for all Matches
     feature_points = []
 
@@ -42,7 +53,7 @@ def FeatureExtraction(left_img, right_img):
         right_index = m.trainIdx
 
         # Compute Feature Points and Disparity
-        if (abs(left_keypoints[left_index].pt[1] - right_keypoints[right_index].pt[1]) > 0.001):
+        if (abs(left_keypoints[left_index].pt[1] - right_keypoints[right_index].pt[1]) > 0.00001):
             continue
         
         # Create Feature Point Class object
@@ -56,6 +67,8 @@ def FeatureExtraction(left_img, right_img):
         feature_point.right_pt = (right_keypoints[right_index].pt[0], right_keypoints[right_index].pt[1])
         feature_point.right_descriptor = right_desc[right_index]
 
+        feature_point.disparity = left_keypoints[left_index].pt[0] - right_keypoints[right_index].pt[0]
+        
         # Append Feature point to a List of Points
         feature_points.append(feature_point)
 
