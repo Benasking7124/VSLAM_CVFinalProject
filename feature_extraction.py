@@ -1,7 +1,8 @@
 # Import Necessary Libraries
+from feature_point import FeaturePoint
 import numpy as np
 import cv2
-from FeaturePoint import FeaturePoint
+
 
 # Define a Function to Extract Feature Points
 def FeatureExtraction(left_img, right_img):
