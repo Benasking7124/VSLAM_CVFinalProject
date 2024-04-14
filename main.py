@@ -47,7 +47,7 @@ if __name__ == "__main__":
         left_boxes, right_boxes = PerformYolo(left_image, right_image)
         
         ############## Extract FeaturePoints & Disparity from Both Images ##############
-        feature_points, disparity = FeatureExtraction(left_image, right_image)
+        feature_points = FeatureExtraction(left_image, right_image)
 
         ######################## Remove Static Features using Depth map ################
         static_feature_points, dynamic_feature_points = FilterFeaturePoints(feature_points, depth_map, depth_threshold = 5000)

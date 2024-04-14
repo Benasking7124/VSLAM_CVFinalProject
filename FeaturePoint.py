@@ -11,3 +11,6 @@ class FeaturePoint:
         # Camera frame
         self.disparity = 0
         self.pt3d = ()   # tuple of x, y, and z
+        self.depth = 0
+        
+        self.dynamic = False
