@@ -1,5 +1,5 @@
 # Import Necessary Libraries
-from feature_point import FeaturePoint
+from FeaturePoint import FeaturePoint
 import numpy as np
 import cv2
 
