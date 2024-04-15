@@ -8,7 +8,8 @@ import cv2
 def FeatureExtraction(left_img, right_img):
 
     # Create an ORB Object to Extract Keypoints
-    orb = cv2.ORB_create() 
+    orb = cv2.ORB_create()
+    # sift = cv2.SIFT_create()
 
     # Find the Keypoints of Left and Right Images
     left_keypoints, left_desc = orb.detectAndCompute(left_img, None) 
@@ -25,28 +26,44 @@ def FeatureExtraction(left_img, right_img):
     search_params = dict(checks = 50)  
     
     # Create a Flann Based Matcher
-    flann = cv2.FlannBasedMatcher(index_params, search_params)
+    # flann = cv2.FlannBasedMatcher(index_params, search_params)
+    bf = cv2.BFMatcher()
+    # bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
 
     # Find Matches and Sort based On Distances
-    matches = flann.match(left_desc, right_desc)
-    matches = sorted(matches, key = lambda x: x.distance)
-
-    # BFM
-    # bfm = cv2.BFMatcher()
-    # matches = bfm.match(left_desc, right_desc)
+    matches = bf.knnMatch(left_desc, right_desc,k=2)
+    # matches = bf.match(left_desc, right_desc)
     # matches = sorted(matches, key = lambda x: x.distance)
-    # match_img = cv2.drawMatches(left_img, left_keypoints, 
-    #                             right_img, right_keypoints, matches,None)
+
+    keep_matches = []
+    for (m, n) in matches:
+        if (m.distance / n.distance) < 0.75:
+            keep_matches.append(m)
+    # match_img_inverse = cv2.drawMatches(left_img, left_keypoints, 
+    #                             right_img, right_keypoints, keep_matches,None)
+    # cv2.imshow('keep', match_img_inverse)
     
-    # cv2.imshow('matches', match_img)
+    # matches = bf.knnMatch(right_desc, left_desc,k=2)
+
+    # keep_matches_inverse = []
+    # for (m, n) in matches:
+    #     if (m.distance / n.distance) < 0.75:
+    #         keep_matches_inverse.append(m)
+    # match_img_inverse = cv2.drawMatches(left_img, left_keypoints, 
+    #                             right_img, right_keypoints, keep_matches_inverse,None)
+    # cv2.imshow('inverse', match_img_inverse)
     # cv2.waitKey()
 
-
+    # good_matches = []
+    # for m in keep_matches:
+    #     for n in keep_matches_inverse:
+    #         if (m.queryIdx == n.queryIdx) and (m.trainIdx == n.trainIdx):
+    #             good_matches.append(m)
     # Compute Feature Points and Disparity for all Matches
     feature_points = []
 
     # For all Matches
-    for m in matches:
+    for m in keep_matches:
 
         # Get the Indices of Matches
         left_index = m.queryIdx
