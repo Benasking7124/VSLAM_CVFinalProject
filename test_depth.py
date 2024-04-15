@@ -24,6 +24,8 @@ if __name__ == "__main__":
     # It seems like for dataset2, the left image is actually the right image
     # feature_points = FeatureExtraction(right_image, left_image)
 
+    print(feature_points)
+
     fp_sorted = sorted(feature_points, key=lambda x: x.disparity)
 
     for fp in fp_sorted:
@@ -35,7 +37,7 @@ if __name__ == "__main__":
         rv = int(fp.right_pt[1])
         cv2.circle(right_image, (ru, rv), radius=5, color=(255, 0, 0), thickness=-1)
 
-        fig, axes = plt.subplots(1, 2, figsize=(100, 50))
+        fig, axes = plt.subplots(1, 2, figsize=(50, 10))
         axes[0].imshow(left_image)
         axes[0].set_title('Left 1')
         axes[1].imshow(right_image)

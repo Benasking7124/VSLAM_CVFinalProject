@@ -26,19 +26,21 @@ def FeatureExtraction(left_img, right_img):
     search_params = dict(checks = 50)  
     
     # Create a Flann Based Matcher
-    # flann = cv2.FlannBasedMatcher(index_params, search_params)
-    bf = cv2.BFMatcher()
+    flann = cv2.FlannBasedMatcher(index_params, search_params)
+    # bf = cv2.BFMatcher()
     # bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
 
     # Find Matches and Sort based On Distances
-    matches = bf.knnMatch(left_desc, right_desc,k=2)
+    # matches = bf.knnMatch(left_desc, right_desc,k=2)
+    matches = flann.knnMatch(left_desc, right_desc,k=2)
     # matches = bf.match(left_desc, right_desc)
     # matches = sorted(matches, key = lambda x: x.distance)
 
     keep_matches = []
     for (m, n) in matches:
-        if (m.distance / n.distance) < 0.75:
+        if (m.distance / n.distance) < 1:
             keep_matches.append(m)
+
     # match_img_inverse = cv2.drawMatches(left_img, left_keypoints, 
     #                             right_img, right_keypoints, keep_matches,None)
     # cv2.imshow('keep', match_img_inverse)
@@ -60,6 +62,7 @@ def FeatureExtraction(left_img, right_img):
     #         if (m.queryIdx == n.queryIdx) and (m.trainIdx == n.trainIdx):
     #             good_matches.append(m)
     # Compute Feature Points and Disparity for all Matches
+    
     feature_points = []
 
     # For all Matches
