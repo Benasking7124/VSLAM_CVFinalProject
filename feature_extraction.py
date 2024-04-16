@@ -3,6 +3,8 @@ from FeaturePoint import FeaturePoint
 import numpy as np
 import cv2
 
+import matplotlib.pyplot as plt
+
 
 # Define a Function to Extract Feature Points
 def FeatureExtraction(left_img, right_img):
@@ -60,12 +62,62 @@ def FeatureExtraction(left_img, right_img):
         for n in keep_matches_inverse:
             if (m.queryIdx == n.trainIdx) and (m.trainIdx == n.queryIdx):
                 good_matches.append(m)
-    # Compute Feature Points and Disparity for all Matches
+
+    print('Number of matches', len(good_matches))
     
+    # Compute Feature Points and Disparity for all Matches
+
+    if len(good_matches)>10:
+        src_pts = np.float32([left_keypoints[m.queryIdx].pt for m in good_matches ]).reshape(-1,1,2)
+        dst_pts = np.float32([right_keypoints[m.trainIdx].pt for m in good_matches ]).reshape(-1,1,2)
+
+        M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 3)
+        matchesMask = mask.ravel().tolist()
+
+        print('Number of inliers', matchesMask.count(1))
+
+
+    draw_params = dict(matchColor = (0,255,0), # draw matches in green color
+                   singlePointColor = None,
+                   matchesMask = matchesMask, # draw only inliers
+                   flags = 2)
+
+    img3 = cv2.drawMatches(left_img,left_keypoints,right_img,right_keypoints,good_matches,None,**draw_params)
+
+
+    # plt.imshow(img3, 'gray')
+    # plt.show()
+
+
+    outliers = []
+
+    for one_case in matchesMask:
+        if one_case == 0:
+            outliers.append(1)
+        else:
+            outliers.append(0)
+
+    print('Number of outliers', outliers.count(1))
+
+    draw_params = dict(matchColor = (255,0,0), # draw matches in green color
+                singlePointColor = None,
+                matchesMask = outliers, # draw only inliers
+                flags = 2)
+
+    img3 = cv2.drawMatches(left_img,left_keypoints,right_img,right_keypoints,good_matches,None,**draw_params)
+
+    # plt.imshow(img3, 'gray')
+    # plt.show()
+
+
+    filtered_values = [value for m, value in zip(matchesMask, good_matches) if m == 1]
+
+
     feature_points = []
 
     # For all Matches
-    for m in good_matches:
+    # for m in good_matches:
+    for m in filtered_values:
 
         # Get the Indices of Matches
         left_index = m.queryIdx
