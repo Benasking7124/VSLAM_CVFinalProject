@@ -24,7 +24,7 @@ if __name__ == "__main__":
     # It seems like for dataset2, the left image is actually the right image
     # feature_points = FeatureExtraction(right_image, left_image)
 
-    print(feature_points)
+    # print(feature_points)
 
     fp_sorted = sorted(feature_points, key=lambda x: x.disparity)
 
