@@ -40,28 +40,9 @@ def read_camera_param(filepath):
     P_rect_00 = np.reshape(calib_data['P0'], (3, 4))
     P_rect_10 = np.reshape(calib_data['P1'], (3, 4))
 
-    # Extract Focal Length
+    # Extract Focal Length, Baselie, and Principle Point
     camera_param['focal_length'] = P_rect_00[0][0]
-
-
-    # Compute the rectified extrinsics from cam0 to camN
-    T1 = np.eye(4)
-    T1[0, 3] = P_rect_10[0, 3] / P_rect_10[0, 0]
-    
-    # Compute the velodyne to rectified camera coordinate transforms
-    data = {}
-    data['T_cam0_velo'] = np.reshape(calib_data['Tr'], (3, 4))
-    data['T_cam0_velo'] = np.vstack([data['T_cam0_velo'], [0, 0, 0, 1]])
-    data['T_cam1_velo'] = T1.dot(data['T_cam0_velo'])
-    
-    # Compute the stereo baselines in meters by projecting the origin of
-    # each camera frame into the velodyne frame and computing the distances
-    # between them
-    p_cam = np.array([0, 0, 0, 1])
-    p_velo0 = np.linalg.inv(data['T_cam0_velo']).dot(p_cam)
-    p_velo1 = np.linalg.inv(data['T_cam1_velo']).dot(p_cam)
-    
-    # Calculate Baseline
-    camera_param['baseline'] = np.linalg.norm(p_velo1 - p_velo0)
+    camera_param['baseline'] = -P_rect_10[0, 3] / P_rect_10[0, 0]
+    camera_param['principle_point'] = (P_rect_00[0, 2], P_rect_00[1, 2])
 
     return camera_param

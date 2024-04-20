@@ -60,9 +60,14 @@ def feature_extraction(left_img, right_img, camera_param):
 
         # Compute 3D coordinate
         neg_disparity = right_keypoints[right_index][0] - left_keypoints[left_index][0]
-        z = camera_param['baseline'] * camera_param['focal_length'] / neg_disparity
-        x = 0
-        y = 0
+        baseline = camera_param['baseline']
+        focal_length = camera_param['focal_length']
+        px = camera_param['principle_point'][0]
+        py = camera_param['principle_point'][1]
+
+        z = baseline * focal_length / neg_disparity
+        x = baseline * (left_keypoints[left_index][0] - px) / neg_disparity
+        y = baseline * (left_keypoints[left_index][1] - py) / neg_disparity
         frame_fps.pt3ds = np.vstack([frame_fps.pt3ds, [x, y, z]])
 
     frame_fps.num_fp = int(frame_fps.left_pts.shape[0])
