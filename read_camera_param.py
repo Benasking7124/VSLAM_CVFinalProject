@@ -27,7 +27,7 @@ def read_camera_param(filepath):
 
     @param {str} filepath - path of calib.txt
 
-    @return {dict} a dictionary contains focal length and baseline
+    @return {dict} dictionary containing projection matrix, focal length, and baseline
     """
 
     # Create Camera Parameter Dictionary
@@ -40,9 +40,11 @@ def read_camera_param(filepath):
     P_rect_00 = np.reshape(calib_data['P0'], (3, 4))
     P_rect_10 = np.reshape(calib_data['P1'], (3, 4))
 
-    # Extract Focal Length, Baselie, and Principle Point
+    # Extract Projection Matrixes, Focal Length, and Baselie
+    camera_param['left_projection'] = P_rect_00
+    camera_param['right_projection'] = P_rect_10
     camera_param['focal_length'] = P_rect_00[0][0]
     camera_param['baseline'] = -P_rect_10[0, 3] / P_rect_10[0, 0]
-    camera_param['principle_point'] = (P_rect_00[0, 2], P_rect_00[1, 2])
+    # camera_param['principle_point'] = (P_rect_00[0, 2], P_rect_00[1, 2])
 
     return camera_param
