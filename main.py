@@ -4,11 +4,11 @@ from feature_extraction import FeatureExtraction
 from filter_feature_points import FilterFeaturePoints
 from bounding_box_association import BoundingBoxAssociation
 from display_images import DisplayImages
+from read_camera_param import read_camera_param
 
 # Import Necessary Libraries
 import cv2
 import os
-
 
 # Define Main Function
 if __name__ == "__main__":
@@ -47,7 +47,9 @@ if __name__ == "__main__":
         left_boxes, right_boxes = PerformYolo(left_image, right_image)
         
         ############## Extract FeaturePoints & Disparity from Both Images ##############
-        feature_points = FeatureExtraction(left_image, right_image)
+        # camera_param below is for Kitti dataset (Dataset_1, Dataset_3 not for Dataset_2)
+        camera_param = read_camera_param('./Dataset_1/calib.txt')
+        feature_points = FeatureExtraction(left_image, right_image, camera_param)
 
         ######################## Remove Static Features using Depth map ################
         static_feature_points, dynamic_feature_points = FilterFeaturePoints(feature_points, depth_map, depth_threshold = 5000)

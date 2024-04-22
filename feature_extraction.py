@@ -6,7 +6,7 @@ import numpy as np
 import cv2
 
 # Define a Function to Extract Feature Points
-def feature_extraction(left_img, right_img, camera_param):
+def FeatureExtraction(left_img, right_img, camera_param):
     """
     Extract the features in the time frame and reconstruct the feature points
 
