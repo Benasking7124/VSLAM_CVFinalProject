@@ -12,7 +12,7 @@ class FeaturePoints:
         
         # Right image frame
         self.right_pts = 0
-        self.right_descriptor = 0
+        self.right_descriptors = 0
 
         # Camera frame
         self.pt3ds = 0   # numpy array, shape (n, 3)

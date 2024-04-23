@@ -1,12 +1,11 @@
 # Import Necessary Libraries
-from FeaturePoint import FeaturePoint
 from FeaturePoints import FeaturePoints
 from feature_matching import feature_matching
 import numpy as np
 import cv2
 
 # Define a Function to Extract Feature Points
-def FeatureExtraction(left_img, right_img, camera_param):
+def feature_extraction(left_img, right_img, camera_param):
     """
     Extract the features in the time frame and reconstruct the feature points
 
@@ -34,9 +33,9 @@ def FeatureExtraction(left_img, right_img, camera_param):
     # Create Frame Object
     frame_fps = FeaturePoints()
     frame_fps.left_pts = np.empty([0, 2])
-    frame_fps.left_descriptors = np.empty([0, left_desc.shape[1]])
+    frame_fps.left_descriptors = np.empty([0, left_desc.shape[1]], dtype=np.uint8)
     frame_fps.right_pts = np.empty([0, 2])
-    frame_fps.right_descriptor = np.empty([0, right_desc.shape[1]])
+    frame_fps.right_descriptors = np.empty([0, right_desc.shape[1]], dtype=np.uint8)
     frame_fps.pt3ds = np.empty([0, 3])
 
     # For all Matches
@@ -56,7 +55,7 @@ def FeatureExtraction(left_img, right_img, camera_param):
         
         # Save the Coordinates of Right Image of Feature point
         frame_fps.right_pts = np.vstack([frame_fps.right_pts, [right_keypoints[right_index][0], right_keypoints[right_index][1]]])
-        frame_fps.right_descriptor = np.vstack([frame_fps.right_descriptor, right_desc[right_index]])
+        frame_fps.right_descriptors = np.vstack([frame_fps.right_descriptors, right_desc[right_index]])
 
         # Compute 3D coordinate
         neg_disparity = right_keypoints[right_index][0] - left_keypoints[left_index][0]
