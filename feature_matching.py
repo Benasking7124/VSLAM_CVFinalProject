@@ -1,8 +1,12 @@
+# Import Necessary Libraries
 import cv2
 import numpy as np
 from itertools import compress
 
-def feature_matching(keypoints1, descriptors1, keypoints2, descrptors2):
+
+# Define a Function to Perform Feature Matching
+def FeatureMatching(keypoints1, descriptors1, keypoints2, descrptors2):
+    
     """
     Match feature points from two images
     
@@ -20,7 +24,6 @@ def feature_matching(keypoints1, descriptors1, keypoints2, descrptors2):
                         table_number = 6,
                         key_size = 12,
                         multi_probe_level = 1)
-
     search_params = dict(checks = 50)
 
     # Create a Flann Based Matcher
@@ -32,7 +35,6 @@ def feature_matching(keypoints1, descriptors1, keypoints2, descrptors2):
     # Matching from 1 to 2
     matches_2_1 = flann.knnMatch(descrptors2, descriptors1, k = 2)
 
-
     # ------ Some of matches desc1->desc2 or desc2->desc1 are tuple (length 0 or length 1) which means not pair... --
     # ------ Code block below detect such cases and save in the list for deleting -----------------------------------
     matches_1_2 = list(matches_1_2)
@@ -43,16 +45,13 @@ def feature_matching(keypoints1, descriptors1, keypoints2, descrptors2):
     # -------------------------------------------------------------------------------------------------
     # -------------------------------------------------------------------------------------------------
 
-
-
-    # Ratio Test 1->2
+    # Ratio Test 1 -> 2
     keep_matches_1 = []
     for (m, n) in matches_1_2:
         if (m.distance / n.distance) < 0.7:
             keep_matches_1.append(m)
 
-
-    # Ratio Test 2->1
+    # Ratio Test 2 -> 1
     keep_matches_2 = []
     for (m, n) in matches_2_1:
         if (m.distance / n.distance) < 0.7:
@@ -69,12 +68,11 @@ def feature_matching(keypoints1, descriptors1, keypoints2, descrptors2):
     if len(bi_direction_matches)>10:
         src_pts = np.float32([[keypoints1[m.queryIdx][0], keypoints1[m.queryIdx][1]] for m in bi_direction_matches])
         dst_pts = np.float32([[keypoints2[m.trainIdx][0], keypoints2[m.trainIdx][1]] for m in bi_direction_matches])
-
         _, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 2)
         matchesMask = mask.ravel().tolist()
         good_matches = list(compress(bi_direction_matches, matchesMask))
     else:
         good_matches = bi_direction_matches
 
-
+    # Return the Matches
     return good_matches

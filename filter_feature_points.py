@@ -1,42 +1,69 @@
 # Import Necessary Libraries
 import numpy as np
 from sklearn.cluster import KMeans
+from feature_points import FeaturePoints
 
 
 # Define a Function to Filter Feature Points by Depth
-def FilterFeaturePoints(featurePoints, depth_map, num_clusters=2):
+def FilterFeaturePoints(feature_points, num_clusters = 2):
     
+    # Initialise List to Store Feature Depths and Coordinates
     feature_depths = []
     feature_coords = []
 
-    # Collect depth information for each feature point
-    for point in featurePoints:
-        left_x, left_y, right_x, right_y = int(point.left_pt[0]), int(point.left_pt[1]), int(point.right_pt[0]), int(point.right_pt[1])
-        depth_pos = [int((left_x + right_x) / 2), int((left_y + right_y) / 2)]
-        point.depth = depth_map[depth_pos[1], depth_pos[0]]
-        feature_depths.append(point.depth)
+    # Store Depth and Coordinates for every Feature Point
+    for ind in range(feature_points.num_fp):
+
+        # Get the Left and Right Coordinates
+        left_x, left_y, right_x, right_y = int(feature_points.left_pts[ind][0]), int(feature_points.left_pts[ind][1]), int(feature_points.right_pts[ind][0]), int(feature_points.right_pts[ind][1])
+        feature_depths.append(feature_points.depth[ind])
         feature_coords.append([left_x, left_y, right_x, right_y])
 
     # Convert depth list to numpy array for clustering
     feature_depths = np.array(feature_depths).reshape(-1, 1)
 
     # Apply K-means clustering
-    kmeans = KMeans(n_clusters=num_clusters, random_state=0).fit(feature_depths)
+    kmeans = KMeans(n_clusters = num_clusters, random_state = 0).fit(feature_depths)
     labels = kmeans.labels_
 
-    # Initialise lists to store static and dynamic feature points
-    static_feature_points = []
-    dynamic_feature_points = []
+    # Initialise Static Feature points
+    static_feature_points = FeaturePoints()
+    static_feature_points.left_pts = np.empty([0, 2])
+    static_feature_points.left_descriptors = np.empty([0, 32], dtype = np.uint8)
+    static_feature_points.right_pts = np.empty([0, 2])
+    static_feature_points.right_descriptors = np.empty([0, 32], dtype = np.uint8)
+    static_feature_points.disparity = np.empty([0, 1])
+    static_feature_points.depth = np.empty([0, 1])
+    static_feature_points.pt3ds = np.empty([0, 3])
+
+    # Initialise Dynamic Feature points
+    dynamic_feature_points = FeaturePoints()
+    dynamic_feature_points.left_pts = np.empty([0, 2])
+    dynamic_feature_points.left_descriptors = np.empty([0, 32], dtype = np.uint8)
+    dynamic_feature_points.right_pts = np.empty([0, 2])
+    dynamic_feature_points.right_descriptors = np.empty([0, 32], dtype = np.uint8)
+    dynamic_feature_points.disparity = np.empty([0, 1])
+    dynamic_feature_points.depth = np.empty([0, 1])
+    dynamic_feature_points.pt3ds = np.empty([0, 3])
 
     # Classify points based on clusters
     for idx, label in enumerate(labels):
-        if label == 0:
-            static_feature_points.append(feature_coords[idx] + [feature_depths[idx, 0]])
+        if label == 1:
+            static_feature_points.left_pts = np.vstack([static_feature_points.left_pts, feature_points.left_pts[idx]])
+            static_feature_points.left_descriptors = np.vstack([static_feature_points.left_descriptors, feature_points.left_descriptors[idx]])
+            static_feature_points.right_pts = np.vstack([static_feature_points.right_pts, feature_points.right_pts[idx]])
+            static_feature_points.right_descriptors = np.vstack([static_feature_points.right_descriptors, feature_points.right_descriptors[idx]])
+            static_feature_points.disparity = np.vstack([static_feature_points.disparity, feature_points.disparity[idx]])
+            static_feature_points.depth = np.vstack([static_feature_points.depth, feature_points.depth[idx]])
+            static_feature_points.pt3ds = np.vstack([static_feature_points.pt3ds, feature_points.pt3ds[idx]])
         else:
-            dynamic_feature_points.append(feature_coords[idx] + [feature_depths[idx, 0]])
-
-
-    static_feature_points = np.array(static_feature_points)
-    dynamic_feature_points = np.array(dynamic_feature_points)
+            dynamic_feature_points.left_pts = np.vstack([dynamic_feature_points.left_pts, feature_points.left_pts[idx]])
+            dynamic_feature_points.left_descriptors = np.vstack([dynamic_feature_points.left_descriptors, feature_points.left_descriptors[idx]])
+            dynamic_feature_points.right_pts = np.vstack([dynamic_feature_points.right_pts, feature_points.right_pts[idx]])
+            dynamic_feature_points.right_descriptors = np.vstack([dynamic_feature_points.right_descriptors, feature_points.right_descriptors[idx]])
+            dynamic_feature_points.disparity = np.vstack([dynamic_feature_points.disparity, feature_points.disparity[idx]])
+            dynamic_feature_points.depth = np.vstack([dynamic_feature_points.depth, feature_points.depth[idx]])
+            dynamic_feature_points.pt3ds = np.vstack([dynamic_feature_points.pt3ds, feature_points.pt3ds[idx]])
     
+    # Return the Static and Dynamic Feature Points
     return static_feature_points, dynamic_feature_points

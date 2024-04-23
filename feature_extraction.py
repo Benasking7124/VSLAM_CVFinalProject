@@ -1,11 +1,13 @@
 # Import Necessary Libraries
-from FeaturePoints import FeaturePoints
-from feature_matching import feature_matching
+from feature_points import FeaturePoints
+from feature_matching import FeatureMatching
 import numpy as np
 import cv2
 
+
 # Define a Function to Extract Feature Points
-def feature_extraction(left_img, right_img, camera_param):
+def FeatureExtraction(left_img, right_img, camera_param):
+    
     """
     Extract the features in the time frame and reconstruct the feature points
 
@@ -17,7 +19,7 @@ def feature_extraction(left_img, right_img, camera_param):
     """
 
     # Create an ORB Object to Extract Keypoints
-    orb = cv2.ORB_create(edgeThreshold=51)
+    orb = cv2.ORB_create(edgeThreshold = 51)
 
     # Find the Keypoints of Left and Right Images
     left_keypoints, left_desc = orb.detectAndCompute(left_img, None) 
@@ -28,15 +30,17 @@ def feature_extraction(left_img, right_img, camera_param):
     right_keypoints = np.array([[kp.pt[0], kp.pt[1]] for kp in right_keypoints])
 
     # Match the Left and Right Keypoints
-    matches = feature_matching(left_keypoints, left_desc, right_keypoints, right_desc)
+    matches = FeatureMatching(left_keypoints, left_desc, right_keypoints, right_desc)
 
-    # Create Frame Object
-    frame_fps = FeaturePoints()
-    frame_fps.left_pts = np.empty([0, 2])
-    frame_fps.left_descriptors = np.empty([0, left_desc.shape[1]], dtype=np.uint8)
-    frame_fps.right_pts = np.empty([0, 2])
-    frame_fps.right_descriptors = np.empty([0, right_desc.shape[1]], dtype=np.uint8)
-    frame_fps.pt3ds = np.empty([0, 3])
+    # Create Feature Points Object
+    feature_points = FeaturePoints()
+    feature_points.left_pts = np.empty([0, 2])
+    feature_points.left_descriptors = np.empty([0, left_desc.shape[1]], dtype = np.uint8)
+    feature_points.right_pts = np.empty([0, 2])
+    feature_points.right_descriptors = np.empty([0, right_desc.shape[1]], dtype = np.uint8)
+    feature_points.disparity = np.empty([0, 1])
+    feature_points.depth = np.empty([0, 1])
+    feature_points.pt3ds = np.empty([0, 3])
 
     # For all Matches
     for m in matches:
@@ -49,25 +53,32 @@ def feature_extraction(left_img, right_img, camera_param):
         if (abs(left_keypoints[left_index][1] - right_keypoints[right_index][1]) > 1e-9):
             continue
         
-        # Save the Coordinates of Left Image of Feature point
-        frame_fps.left_pts = np.vstack([frame_fps.left_pts, [left_keypoints[left_index][0], left_keypoints[left_index][1]]])
-        frame_fps.left_descriptors = np.vstack([frame_fps.left_descriptors, left_desc[left_index]])
-        
-        # Save the Coordinates of Right Image of Feature point
-        frame_fps.right_pts = np.vstack([frame_fps.right_pts, [right_keypoints[right_index][0], right_keypoints[right_index][1]]])
-        frame_fps.right_descriptors = np.vstack([frame_fps.right_descriptors, right_desc[right_index]])
+        # Save the Coordinates of Feature point of Left Image
+        feature_points.left_pts = np.vstack([feature_points.left_pts, [left_keypoints[left_index][0], left_keypoints[left_index][1]]])
+        feature_points.left_descriptors = np.vstack([feature_points.left_descriptors, left_desc[left_index]])
+            
+        # Save the Coordinates of Feature point of Right Image
+        feature_points.right_pts = np.vstack([feature_points.right_pts, [right_keypoints[right_index][0], right_keypoints[right_index][1]]])
+        feature_points.right_descriptors = np.vstack([feature_points.right_descriptors, right_desc[right_index]])
 
-        # Compute 3D coordinate
-        neg_disparity = right_keypoints[right_index][0] - left_keypoints[left_index][0]
+        # Read the Baseline and Focal Length
         baseline = camera_param['baseline']
         focal_length = camera_param['focal_length']
 
-        z = baseline * focal_length / neg_disparity
-        pt2d_z = np.array([z * left_keypoints[left_index][0], z * left_keypoints[left_index][1], z])   # [z * u, z * v, z]
+        # Calculate and Store Disparity and Depth
+        neg_disparity = right_keypoints[right_index][0] - left_keypoints[left_index][0]
+        depth = baseline * focal_length / neg_disparity
+        feature_points.disparity = np.vstack([feature_points.disparity, neg_disparity])
+        feature_points.depth = np.vstack([feature_points.depth, depth])
+
+        # Compute 3D coordinates in Camera Frame            
+        pt2d_z = np.array([depth * left_keypoints[left_index][0], depth * left_keypoints[left_index][1], depth])   # [z * u, z * v, z]
         pt3d = np.linalg.pinv(camera_param['left_projection']) @ pt2d_z
-        frame_fps.pt3ds = np.vstack([frame_fps.pt3ds, pt3d[0:3]])
+        feature_points.pt3ds = np.vstack([feature_points.pt3ds, pt3d[0: 3]])
 
-    frame_fps.num_fp = int(frame_fps.left_pts.shape[0])
-    print('Number of matches', frame_fps.num_fp)
+    # Determine Number of Feature Points
+    feature_points.num_fp = int(feature_points.left_pts.shape[0])
+    print('Number of matches', feature_points.num_fp)
 
-    return frame_fps
+    # Return the Feature Points
+    return feature_points

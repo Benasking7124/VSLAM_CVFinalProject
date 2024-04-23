@@ -1,14 +1,14 @@
 import cv2
 import os
 import matplotlib.pyplot as plt
-from feature_extraction import feature_extraction
-from read_camera_param import read_camera_param
+from feature_extraction import FeatureExtraction
+from read_camera_param import ReadCameraParam
 import numpy as np
 
 if __name__ == "__main__":
 
     # Read Calib File
-    camera_param = read_camera_param('Dataset_1/calib.txt')
+    camera_param = ReadCameraParam('Dataset_1/calib.txt')
 
 
     left_images_folder = 'Dataset_1/Left_Images/'
@@ -24,7 +24,7 @@ if __name__ == "__main__":
     left_image = cv2.imread(left_images[0])
     right_image = cv2.imread(right_images[0])
 
-    feature_points = feature_extraction(left_image, right_image, camera_param)
+    feature_points = FeatureExtraction(left_image, right_image, camera_param)
     # It seems like for dataset2, the left image is actually the right image
     # feature_points = FeatureExtraction(right_image, left_image)
 

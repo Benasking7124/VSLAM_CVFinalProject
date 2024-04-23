@@ -1,21 +1,23 @@
 # Import Necessary Modules
+from read_camera_param import ReadCameraParam
 from perform_yolo import PerformYolo
-from feature_extraction import feature_extraction
+from feature_extraction import FeatureExtraction
 from filter_feature_points import FilterFeaturePoints
+from frame_matching import FrameMatching
 from bounding_box_association import BoundingBoxAssociation
 from display_images import DisplayImages
-from read_camera_param import read_camera_param
-from frame_matching import frame_matching
+
 
 # Import Necessary Libraries
 import cv2
 import os
 
+
 # Define Main Function
 if __name__ == "__main__":
 
     # Read Calib File
-    camera_param = read_camera_param('./Dataset_1/calib.txt')
+    camera_param = ReadCameraParam('./Dataset_1/calib.txt')
 
     # Get the Folders for Left & Right Stereo Images
     left_images_folder = 'Dataset_1/Left_Images/'
@@ -29,16 +31,15 @@ if __name__ == "__main__":
     left_images = [os.path.abspath(left_images_folder + '/' + left_image) for left_image in left_images]
     right_images = [os.path.abspath(right_images_folder + '/' + right_image) for right_image in right_images]
 
-    # First Frame
+    # Read the First Frame of Left and Right Images
     left_image = cv2.imread(left_images[0])
     right_image = cv2.imread(right_images[0])
-    previous_feature_points = feature_extraction(left_image, right_image, camera_param)
+    previous_feature_points = FeatureExtraction(left_image, right_image, camera_param)
 
     # For the Left and Right Images Dataset
     for ind in range(1, len(left_images)):
 
         ####################### Preprocess the Images #######################
-
         # Read the Images
         left_image = cv2.imread(left_images[ind])
         right_image = cv2.imread(right_images[ind])
@@ -48,11 +49,10 @@ if __name__ == "__main__":
         
         ############## Extract FeaturePoints from Both Images ##############
         # camera_param below is for Kitti dataset (Dataset_1, Dataset_3 not for Dataset_2)
-        
-        feature_points = feature_extraction(left_image, right_image, camera_param)
+        feature_points = FeatureExtraction(left_image, right_image, camera_param)
 
         ######################## Remove Static Features using Depth map ################
-        static_feature_points, dynamic_feature_points = FilterFeaturePoints(featurePoints, depth_map, num_clusters=2)
+        static_feature_points, dynamic_feature_points = FilterFeaturePoints(feature_points, num_clusters = 2)
 
         # ###################### Perform Bounding Box Association ########################
         # associated_bounding_boxes = BoundingBoxAssociation(left_boxes, right_boxes, dynamic_feature_points)
@@ -61,5 +61,5 @@ if __name__ == "__main__":
         # DisplayImages(left_image, right_image, static_feature_points, dynamic_feature_points, associated_bounding_boxes)
 
         # ############################## Match Feature Between Frames #########################
-        paired_static_features = frame_matching(previous_feature_points, feature_points)
+        paired_static_features = FrameMatching(previous_feature_points, feature_points)
         previous_feature_points = feature_points

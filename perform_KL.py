@@ -1,6 +1,6 @@
 # Import Necessary Modules
 from feature_extraction import FeatureExtraction
-from read_camera_param import read_camera_param
+from read_camera_param import ReadCameraParam
 
 # Import Necessary Libraries
 import cv2
@@ -81,7 +81,7 @@ if __name__ == "__main__":
 
         ############## Extract FeaturePoints & Disparity from Both Images ##############
         # camera_param below is for Kitti dataset (Dataset_1, Dataset_3 not for Dataset_2)
-        camera_param = read_camera_param('./Dataset_1/calib.txt')
+        camera_param = ReadCameraParam('./Dataset_1/calib.txt')
         feature_points = FeatureExtraction(left_image, right_image, camera_param)
 
         # Draw Feature Points on Images

@@ -1,8 +1,12 @@
-from FeaturePoints import FeaturePoints
-from feature_matching import feature_matching
+# Import Necessary Libraries
+from feature_points import FeaturePoints
+from feature_matching import FeatureMatching
 import numpy as np
 
-def frame_matching(previous_keypoints, current_keypoints):
+
+# Define a Function to Perform Feature Matching between Previous and Current Features
+def FrameMatching(previous_keypoints, current_keypoints):
+    
     """
     Match current feature points with previous featrue points
 
@@ -13,8 +17,8 @@ def frame_matching(previous_keypoints, current_keypoints):
     """
     
     # Match the Left and Right Keypoints
-    left_matches = feature_matching(previous_keypoints.left_pts, previous_keypoints.left_descriptors, current_keypoints.left_pts, current_keypoints.left_descriptors)
-    right_matches = feature_matching(previous_keypoints.right_pts, previous_keypoints.right_descriptors, current_keypoints.right_pts, current_keypoints.right_descriptors)
+    left_matches = FeatureMatching(previous_keypoints.left_pts, previous_keypoints.left_descriptors, current_keypoints.left_pts, current_keypoints.left_descriptors)
+    right_matches = FeatureMatching(previous_keypoints.right_pts, previous_keypoints.right_descriptors, current_keypoints.right_pts, current_keypoints.right_descriptors)
 
     # Bi-image Check
     good_matches = []
@@ -32,4 +36,5 @@ def frame_matching(previous_keypoints, current_keypoints):
         # [u_current, v_current, X_previous, Y_previous, Z_previous]
         paired_feature_points = np.vstack([paired_feature_points, [current_2d[0], current_2d[1], previous_3d[0], previous_3d[1], previous_3d[2]]])
     
+    # Return the Paired Feature Points
     return paired_feature_points
