@@ -52,7 +52,7 @@ if __name__ == "__main__":
         feature_points = feature_extraction(left_image, right_image, camera_param)
 
         ######################## Remove Static Features using Depth map ################
-        # static_feature_points, dynamic_feature_points = FilterFeaturePoints(feature_points, depth_map, depth_threshold = 5000)
+        static_feature_points, dynamic_feature_points = FilterFeaturePoints(featurePoints, depth_map, num_clusters=2)
 
         # ###################### Perform Bounding Box Association ########################
         # associated_bounding_boxes = BoundingBoxAssociation(left_boxes, right_boxes, dynamic_feature_points)
