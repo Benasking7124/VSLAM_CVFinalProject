@@ -1,40 +1,38 @@
+# Import Necessary Libraries
 import numpy as np
 
-# The functions are copy from https://github.com/utiasSTARS/pykitti.git
 
-def read_calib_file(filepath):
-    """Read in a calibration file and parse into a dictionary."""
+# Define a Function to Read Calibration File
+def ReadCalibFile(filepath):
+
+    # Initialise Dictionary to Store Data
     data = {}
 
+    # Store the Data into Dictionary
     with open(filepath, 'r') as f:
         for line in f.readlines():
             try:
                 key, value = line.split(':', 1)
             except ValueError:
                 key, value = line.split(' ', 1)
-            # The only non-float values in these files are dates, which
-            # we don't care about anyway
+            
             try:
                 data[key] = np.array([float(x) for x in value.split()])
             except ValueError:
                 pass
-
+    
+    # Return the Data
     return data
 
-def read_camera_param(filepath):
-    """
-    Read Camera Parameter from calib.txt and output focal length and baseline
 
-    @param {str} filepath - path of calib.txt
-
-    @return {dict} dictionary containing projection matrices, focal length, and baseline
-    """
-
+# Define a Function to Read Camera Parameters
+def ReadCameraParam(filepath):
+    
     # Create Camera Parameter Dictionary
     camera_param = {}
      
     # Read Calib File
-    calib_data = read_calib_file(filepath)   # type: dict
+    calib_data = ReadCalibFile(filepath)
 
     # Create 3x4 projection matrices
     P_rect_00 = np.reshape(calib_data['P0'], (3, 4))
@@ -47,4 +45,5 @@ def read_camera_param(filepath):
     camera_param['baseline'] = -P_rect_10[0, 3] / P_rect_10[0, 0]
     # camera_param['principle_point'] = (P_rect_00[0, 2], P_rect_00[1, 2])
 
+    # Return the Camera Parameters
     return camera_param
