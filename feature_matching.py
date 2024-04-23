@@ -33,36 +33,15 @@ def feature_matching(keypoints1, descriptors1, keypoints2, descrptors2):
     matches_2_1 = flann.knnMatch(descrptors2, descriptors1, k = 2)
 
 
-
-
     # ------ Some of matches desc1->desc2 or desc2->desc1 are tuple (length 0 or length 1) which means not pair... --
     # ------ Code block below detect such cases and save in the list for deleting -----------------------------------
     matches_1_2 = list(matches_1_2)
-    indices_for_delete_1_2 = []
-    for i, one_match in enumerate(matches_1_2):
-        if len(one_match)==0 or len(one_match)==1:
-            indices_for_delete_1_2.append(i)
-        
+    matches_1_2 = [value for value in matches_1_2 if len(value) > 1]
+
     matches_2_1 = list(matches_2_1)
-    indices_for_delete_2_1 = []
-
-    for i, one_match in enumerate(matches_2_1):
-         if len(one_match)==0 or len(one_match)==1:
-            indices_for_delete_2_1.append(i)
-
-    # Deleting length 0 or length 1 tuples(matches)
-    all_indicies_deletes = indices_for_delete_1_2+indices_for_delete_2_1
-    all_indicies_deletes = list(set(all_indicies_deletes))
-
-    for index in sorted(all_indicies_deletes, reverse=True):
-        del matches_1_2[index]
-        del matches_2_1[index]
-
-    matches_1_2 = tuple(matches_1_2)
-    matches_2_1 = tuple(matches_2_1)
+    matches_2_1 = [value for value in matches_2_1 if len(value) > 1]
     # -------------------------------------------------------------------------------------------------
     # -------------------------------------------------------------------------------------------------
-
 
 
 
@@ -95,7 +74,7 @@ def feature_matching(keypoints1, descriptors1, keypoints2, descrptors2):
         matchesMask = mask.ravel().tolist()
         good_matches = list(compress(bi_direction_matches, matchesMask))
     else:
-        good_matches = None
+        good_matches = bi_direction_matches
 
 
     return good_matches
