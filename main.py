@@ -2,6 +2,7 @@
 from read_camera_param import ReadCameraParam
 from perform_yolo import PerformYolo
 from feature_extraction import FeatureExtraction
+from feature_extraction import FeatureExtraction
 from filter_feature_points import FilterFeaturePoints
 from frame_matching import FrameMatching
 from bounding_box_association import BoundingBoxAssociation
