@@ -5,6 +5,7 @@ from feature_extraction import FeatureExtraction
 from feature_extraction import FeatureExtraction
 from filter_feature_points import FilterFeaturePoints
 from frame_matching import FrameMatching
+from compute_reproj_error import ComputeReprojError
 from bounding_box_association import BoundingBoxAssociation
 from display_images import DisplayImages
 
@@ -64,3 +65,6 @@ if __name__ == "__main__":
         # ############################## Match Feature Between Frames #########################
         paired_static_features = FrameMatching(previous_feature_points, feature_points)
         previous_feature_points = feature_points
+
+        # ############################## Compute Reprojection Error #########################
+        paired_static_features = ComputeReprojError(feature_points, camera_param)
