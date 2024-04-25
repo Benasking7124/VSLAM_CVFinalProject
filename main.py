@@ -8,7 +8,7 @@ from frame_matching import FrameMatching
 from PoseEstimator import PoseEstimator
 from bounding_box_association import BoundingBoxAssociation
 from display_images import DisplayImages
-
+from draw_trajectory import DrawTrajectory
 
 # Import Necessary Libraries
 import cv2
@@ -21,11 +21,11 @@ import time
 if __name__ == "__main__":
 
     # Read Calib File
-    camera_param = ReadCameraParam('./Dataset_1/calib.txt')
+    camera_param = ReadCameraParam('./Dataset_3/calib.txt')
 
     # Get the Folders for Left & Right Stereo Images
-    left_images_folder = 'Dataset_1/Left_Images/'
-    right_images_folder = 'Dataset_1/Right_Images/'
+    left_images_folder = 'Dataset_3/Left_Images/'
+    right_images_folder = 'Dataset_3/Right_Images/'
 
     # Get the Images Path list
     left_images = os.listdir(left_images_folder)
@@ -79,3 +79,6 @@ if __name__ == "__main__":
         T_current = pe.minimize_error()
         Transformation_list = np.vstack([Transformation_list, T_current])
         time.sleep(10)
+
+
+    DrawTrajectory(Transformation_list)

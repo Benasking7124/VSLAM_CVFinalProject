@@ -5,7 +5,6 @@ from frame_matching import FrameMatching
 from scipy.stats import entropy
 from perform_yolo import PerformYolo
 
-
 # Import Necessary Libraries
 import cv2
 import os
@@ -89,6 +88,16 @@ def kl_divergence_scipy(P, Q, epsilon=1e-10):
     Q = np.array(Q) + epsilon
     return entropy(P, Q)
 
+    """ Compute reprojection error. """
+    predicted_points = project_points(T, world_points)
+    return np.linalg.norm(predicted_points - image_points[:, :2], axis=1).sum()  # Sum of Euclidean distances
+
+
+def compute_error(pred_points, observed_points):
+
+    return np.linalg.norm(pred_points - observed_points, axis=1).sum()
+
+
 # Define Main Function
 if __name__ == "__main__":
 
@@ -171,9 +180,13 @@ if __name__ == "__main__":
 
 
         # Visualization to check feature matching between time frames, predicted points vs observed points
-        # draw_features_on_image(left_image, next_left_image, previous_2ds, predicted_list, 'Observed Fpts in T0 & Predicted Fpts in T1')
-        # draw_features_on_image(left_image, next_left_image, previous_2ds, current_2ds, 'Observed Fpts Matching between T0 and T1')
-        # draw_features_on_image(next_left_image, next_left_image, predicted_list, current_2ds, 'Compare Predicted Fpts in T1 & Observed Fpts in T1')
+        draw_features_on_image(left_image, next_left_image, previous_2ds, predicted_list, 'Observed Fpts in T0 & Predicted Fpts in T1')
+        draw_features_on_image(left_image, next_left_image, previous_2ds, current_2ds, 'Observed Fpts Matching between T0 and T1')
+        draw_features_on_image(next_left_image, next_left_image, predicted_list, current_2ds, 'Compare Predicted Fpts in T1 & Observed Fpts in T1')
+
+
+        error = compute_error(predicted_list, current_2ds)
+        print(error)
 
 
         orb = cv2.ORB_create()
@@ -201,3 +214,4 @@ if __name__ == "__main__":
         visualize_KL(next_left_image, next_left_image, predicted_list, current_2ds, 
                      kl_values, left_boxes, left_boxes, 'Compare Predicted Fpts in T1 & Observed Fpts in T1')
 
+        print()
