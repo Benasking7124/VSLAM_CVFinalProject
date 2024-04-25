@@ -23,7 +23,7 @@ def FilterFeaturePoints(feature_points, num_clusters = 2):
     feature_depths = np.array(feature_depths).reshape(-1, 1)
 
     # Apply K-means clustering
-    kmeans = KMeans(n_clusters = num_clusters, random_state = 0).fit(feature_depths)
+    kmeans = KMeans(n_clusters = num_clusters, random_state = 42).fit(feature_depths)
     labels = kmeans.labels_
 
     # Initialise Static Feature points
@@ -64,6 +64,10 @@ def FilterFeaturePoints(feature_points, num_clusters = 2):
             dynamic_feature_points.disparity = np.vstack([dynamic_feature_points.disparity, feature_points.disparity[idx]])
             dynamic_feature_points.depth = np.vstack([dynamic_feature_points.depth, feature_points.depth[idx]])
             dynamic_feature_points.pt3ds = np.vstack([dynamic_feature_points.pt3ds, feature_points.pt3ds[idx]])
+    
+    # Set the Number of Feature Points
+    static_feature_points.num_fp = static_feature_points.left_pts.shape[0]
+    dynamic_feature_points.num_fp = dynamic_feature_points.left_pts.shape[0]
     
     # Return the Static and Dynamic Feature Points
     return static_feature_points, dynamic_feature_points

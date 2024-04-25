@@ -29,14 +29,14 @@ def DisplayImages(left_image, right_image, static_feature_points, dynamic_featur
         color_index += 1
     
     # Display Static Feature Points on Both Images using Red Color
-    for point in static_feature_points:
-        left_x, left_y, right_x, right_y = int(point[0]), int(point[1]), int(point[2]), int(point[3])
+    for ind in range(static_feature_points.num_fp):
+        left_x, left_y, right_x, right_y = int(static_feature_points.left_pts[ind][0]), int(static_feature_points.left_pts[ind][1]), int(static_feature_points.right_pts[ind][0]), int(static_feature_points.right_pts[ind][1])
         left_image = cv2.circle(left_image, (left_x, left_y), radius = 2, color = (0, 0, 255), thickness = -1)
         right_image = cv2.circle(right_image, (right_x, right_y), radius = 2, color = (0, 0, 255), thickness = -1)
     
     # Display Dynamic Feature Points on Both Images using Green Color
-    for point in dynamic_feature_points:
-        left_x, left_y, right_x, right_y = int(point[0]), int(point[1]), int(point[2]), int(point[3])
+    for ind in range(dynamic_feature_points.num_fp):
+        left_x, left_y, right_x, right_y = int(dynamic_feature_points.left_pts[ind][0]), int(dynamic_feature_points.left_pts[ind][1]), int(dynamic_feature_points.right_pts[ind][0]), int(dynamic_feature_points.right_pts[ind][1])
         left_image = cv2.circle(left_image, (left_x, left_y), radius = 2, color = (0, 128, 0), thickness = -1)
         right_image = cv2.circle(right_image, (right_x, right_y), radius = 2, color = (0, 128, 0), thickness = -1)
 

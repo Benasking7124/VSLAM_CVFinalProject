@@ -14,6 +14,7 @@ from display_images import DisplayImages
 import cv2
 import os
 import numpy as np
+import time
 
 
 # Define Main Function
@@ -39,8 +40,7 @@ if __name__ == "__main__":
     right_image = cv2.imread(right_images[0])
     previous_feature_points = FeatureExtraction(left_image, right_image, camera_param)
 
-    T_pervious = np.identity(4, 4)
-
+    T_previous = np.identity(4)
     # For the Left and Right Images Dataset
     for ind in range(1, len(left_images)):
 
@@ -48,6 +48,10 @@ if __name__ == "__main__":
         # Read the Images
         left_image = cv2.imread(left_images[ind])
         right_image = cv2.imread(right_images[ind])
+
+        # Resize Images
+        left_image = cv2.resize(left_image, (650, 350))
+        right_image = cv2.resize(right_image, (650, 350))
 
         ########################### Perform YOLO on Both Images ########################
         left_boxes, right_boxes = PerformYolo(left_image, right_image)
@@ -60,14 +64,15 @@ if __name__ == "__main__":
         static_feature_points, dynamic_feature_points = FilterFeaturePoints(feature_points, num_clusters = 2)
 
         # ###################### Perform Bounding Box Association ########################
-        # associated_bounding_boxes = BoundingBoxAssociation(left_boxes, right_boxes, dynamic_feature_points)
+        #associated_bounding_boxes = BoundingBoxAssociation(left_boxes, right_boxes, dynamic_feature_points)
 
         # ############################## Display both the Images #########################
-        # DisplayImages(left_image, right_image, static_feature_points, dynamic_feature_points, associated_bounding_boxes)
+        #DisplayImages(left_image, right_image, static_feature_points, dynamic_feature_points, associated_bounding_boxes)
 
         # ############################## Match Feature Between Frames #########################
         paired_static_features = FrameMatching(previous_feature_points, feature_points)
         previous_feature_points = feature_points
 
         # ############################## Compute Reprojection Error #########################
-        paired_static_features = ComputeReprojError(feature_points, camera_param, T_0)
+        Reprojection_error = ComputeReprojError(paired_static_features, camera_param, T_previous, T_current)
+        time.sleep(10)
