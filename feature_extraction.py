@@ -52,8 +52,8 @@ def FeatureExtraction(left_img, right_img, camera_param):
         # Compute Feature Points and Disparity
         if (abs(left_keypoints[left_index][1] - right_keypoints[right_index][1]) > 1e-9):
             continue
-        neg_disparity = right_keypoints[right_index][0] - left_keypoints[left_index][0]
-        if (neg_disparity == 0):
+        disparity = left_keypoints[left_index][0] - right_keypoints[right_index][0]
+        if (disparity == 0):
             continue
         
         # Save the Coordinates of Feature point of Left Image
@@ -69,13 +69,15 @@ def FeatureExtraction(left_img, right_img, camera_param):
         focal_length = camera_param['focal_length']
 
         # Calculate and Store Disparity and Depth
-        depth = baseline * focal_length / neg_disparity
-        feature_points.disparity = np.vstack([feature_points.disparity, neg_disparity])
+        depth = baseline * focal_length / disparity
+        feature_points.disparity = np.vstack([feature_points.disparity, disparity])
         feature_points.depth = np.vstack([feature_points.depth, depth])
 
         # Compute 3D coordinates in Camera Frame            
         pt2d_z = np.array([depth * left_keypoints[left_index][0], depth * left_keypoints[left_index][1], depth])   # [z * u, z * v, z]
         pt3d = np.linalg.pinv(camera_param['left_projection']) @ pt2d_z
+        # pt3d_cv = cv2.triangulatePoints(camera_param['left_projection'], camera_param['right_projection'], left_keypoints[left_index], right_keypoints[right_index])
+        # pt3d_cv = pt3d_cv[0:3] / pt3d_cv[3]
         feature_points.pt3ds = np.vstack([feature_points.pt3ds, pt3d[0: 3]])
 
     # Determine Number of Feature Points
