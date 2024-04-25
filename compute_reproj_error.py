@@ -18,7 +18,7 @@ def inverse_project_points(p_2d, depth, camera_matrix):
                                  
 
 # Define a Function to Compute Reprojection Error
-def ComputeReprojError(feature_points, camera_param):
+def ComputeReprojError(static_feature_points, camera_param, T_previous, T_current):
     
     """
     Calculates the reprojection error for a feature point.
@@ -36,14 +36,23 @@ def ComputeReprojError(feature_points, camera_param):
     """
 
     # Initialise Vectors
-    image_coordinates = np.empty([0, 3])
-    T_c_w_i = np.identity(3)
+    # image_coordinates = np.empty([0, 3])
+    # T_c_w_i = np.identity(3)
 
-    # For every Feature Point
-    for ind in range(feature_points.num_fp):
+    # # For every Feature Point
+    # for ind in range(feature_points.num_fp):
 
-        # Compute 3D Camera Coordinates from 2D Image Coordinates
-        current_image_coordinates = np.vstack([image_coordinates, [inverse_project_points(feature_points.left_pts[ind], feature_points.depth[ind], camera_param['left_projection'])]])
+    #     # Compute 3D Camera Coordinates from 2D Image Coordinates
+    #     current_image_coordinates = np.vstack([image_coordinates, [inverse_project_points(feature_points.left_pts[ind], feature_points.depth[ind], camera_param['left_projection'])]])
 
-        # Transform 3D Camera Coordinates from Current Frame to World Frame
-        current_world_coordinates = (T_c_w_i @ current_image_coordinates.T).T
+    #     # Transform 3D Camera Coordinates from Current Frame to World Frame
+    #     current_world_coordinates = (T_c_w_i @ current_image_coordinates.T).T
+
+    temp = np.vstack((T_previous.reshape(3, 4), [0, 0, 0, 1])) @ np.hstack((static_feature_points[2:5], [1]))
+    temp_2 = np.linalg.inv(np.vstack((T_current.reshape(3, 4), [0, 0, 0, 1])))@temp
+
+    M = camera_param['left_projection']
+
+    projected_homogeneous = M@temp_2
+
+    reprojecgtion_error = static_feature_points[0:2] - static_feature_points

@@ -13,6 +13,7 @@ from display_images import DisplayImages
 # Import Necessary Libraries
 import cv2
 import os
+import numpy as np
 
 
 # Define Main Function
@@ -37,6 +38,8 @@ if __name__ == "__main__":
     left_image = cv2.imread(left_images[0])
     right_image = cv2.imread(right_images[0])
     previous_feature_points = FeatureExtraction(left_image, right_image, camera_param)
+
+    T_pervious = np.identity(4, 4)
 
     # For the Left and Right Images Dataset
     for ind in range(1, len(left_images)):
@@ -67,4 +70,4 @@ if __name__ == "__main__":
         previous_feature_points = feature_points
 
         # ############################## Compute Reprojection Error #########################
-        paired_static_features = ComputeReprojError(feature_points, camera_param)
+        paired_static_features = ComputeReprojError(feature_points, camera_param, T_0)

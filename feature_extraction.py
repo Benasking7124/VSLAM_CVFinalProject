@@ -52,6 +52,9 @@ def FeatureExtraction(left_img, right_img, camera_param):
         # Compute Feature Points and Disparity
         if (abs(left_keypoints[left_index][1] - right_keypoints[right_index][1]) > 1e-9):
             continue
+        neg_disparity = right_keypoints[right_index][0] - left_keypoints[left_index][0]
+        if (neg_disparity == 0):
+            continue
         
         # Save the Coordinates of Feature point of Left Image
         feature_points.left_pts = np.vstack([feature_points.left_pts, [left_keypoints[left_index][0], left_keypoints[left_index][1]]])
@@ -66,7 +69,6 @@ def FeatureExtraction(left_img, right_img, camera_param):
         focal_length = camera_param['focal_length']
 
         # Calculate and Store Disparity and Depth
-        neg_disparity = right_keypoints[right_index][0] - left_keypoints[left_index][0]
         depth = baseline * focal_length / neg_disparity
         feature_points.disparity = np.vstack([feature_points.disparity, neg_disparity])
         feature_points.depth = np.vstack([feature_points.depth, depth])
