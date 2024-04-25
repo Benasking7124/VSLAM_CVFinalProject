@@ -1,5 +1,6 @@
 # Import Necessary Libraries
 import collections
+import numpy as np
 
 
 # Define a Function to Check if a Feature Point falls inside Bounding Box
@@ -20,13 +21,17 @@ def check_point_in_bbox(bbox, point):
 def is_Matching_Features(feature_points, left_feature, right_feature):
 
     # Create Feature from Left and Right Features
-    feature = [left_feature[0], left_feature[1], right_feature[0], right_feature[1]]
+    feature = np.array([left_feature[0], left_feature[1], right_feature[0], right_feature[1]])
 
     # Check if Feature is present in List of Feature Points
-    for point in feature_points:
-        if collections.Counter(point) == collections.Counter(feature):
-            return True
-    return False
+    point = np.empty([0, 4])
+    for ind in range(feature_points.num_fp):
+        point = np.vstack([point, [feature_points.left_pts[ind][0], feature_points.left_pts[ind][1], feature_points.right_pts[ind][0], feature_points.right_pts[ind][1]]])
+    
+    if feature in point:
+        return True
+    else:
+        return False
 
 
 # Define a Function to Count Matching Features
@@ -60,8 +65,8 @@ def BoundingBoxAssociation(left_boxes, right_boxes, feature_points):
     objects_on_right_image['Bounding_Boxes']['Coordinates'] = right_boxes
 
     # Store the Feature Points for both Frames
-    objects_on_left_image['Feature_Points'] = feature_points[:, 0: 2]
-    objects_on_right_image['Feature_Points'] = feature_points[:, 2: 4]
+    objects_on_left_image['Feature_Points'] = feature_points.left_pts
+    objects_on_right_image['Feature_Points'] = feature_points.right_pts
 
     # Initialise a List to store Feature Points for Corresponding Bounding Boxes
     objects_on_left_image['Bounding_Boxes']['Feature_Points'] = []

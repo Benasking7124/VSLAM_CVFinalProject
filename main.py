@@ -24,8 +24,8 @@ if __name__ == "__main__":
     camera_param = ReadCameraParam('./Dataset_1/calib.txt')
 
     # Get the Folders for Left & Right Stereo Images
-    left_images_folder = 'Dataset_1/Left_Images/'
-    right_images_folder = 'Dataset_1/Right_Images/'
+    left_images_folder = 'Dataset_2/Left_Images/'
+    right_images_folder = 'Dataset_2/Right_Images/'
 
     # Get the Images Path list
     left_images = os.listdir(left_images_folder)
@@ -64,15 +64,15 @@ if __name__ == "__main__":
         static_feature_points, dynamic_feature_points = FilterFeaturePoints(feature_points, num_clusters = 2)
 
         # ###################### Perform Bounding Box Association ########################
-        #associated_bounding_boxes = BoundingBoxAssociation(left_boxes, right_boxes, dynamic_feature_points)
+        associated_bounding_boxes = BoundingBoxAssociation(left_boxes, right_boxes, feature_points)
 
         # ############################## Display both the Images #########################
-        #DisplayImages(left_image, right_image, static_feature_points, dynamic_feature_points, associated_bounding_boxes)
+        DisplayImages(left_image, right_image, static_feature_points, dynamic_feature_points, associated_bounding_boxes)
 
         # ############################## Match Feature Between Frames #########################
         paired_static_features = FrameMatching(previous_feature_points, feature_points)
         previous_feature_points = feature_points
 
         # ############################## Compute Reprojection Error #########################
-        Reprojection_error = ComputeReprojError(paired_static_features, camera_param, T_previous, T_current)
+        #Reprojection_error = ComputeReprojError(paired_static_features, camera_param, T_previous, T_current)
         time.sleep(10)
