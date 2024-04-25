@@ -5,7 +5,7 @@ from feature_extraction import FeatureExtraction
 from feature_extraction import FeatureExtraction
 from filter_feature_points import FilterFeaturePoints
 from frame_matching import FrameMatching
-from compute_reproj_error import ComputeReprojError
+from PoseEstimator import PoseEstimator
 from bounding_box_association import BoundingBoxAssociation
 from display_images import DisplayImages
 
@@ -40,7 +40,8 @@ if __name__ == "__main__":
     right_image = cv2.imread(right_images[0])
     previous_feature_points = FeatureExtraction(left_image, right_image, camera_param)
 
-    T_previous = np.identity(4)
+    Transformation_list = np.array([[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0]])
+
     # For the Left and Right Images Dataset
     for ind in range(1, len(left_images)):
 
@@ -74,5 +75,7 @@ if __name__ == "__main__":
         previous_feature_points = feature_points
 
         # ############################## Compute Reprojection Error #########################
-        Reprojection_error = ComputeReprojError(paired_static_features, camera_param, T_previous, T_current)
+        pe = PoseEstimator(paired_static_features, camera_param['left_projection'], Transformation_list[ind - 1])
+        T_current = pe.minimize_error()
+        Transformation_list = np.vstack([Transformation_list, T_current])
         time.sleep(10)
