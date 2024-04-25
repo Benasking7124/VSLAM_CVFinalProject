@@ -1,6 +1,4 @@
 # Import Necessary Libraries
-from feature_points import FeaturePoints
-from feature_matching import FeatureMatching
 import numpy as np
 import cv2
 
@@ -13,27 +11,35 @@ def inverse_project_points(p_2d, depth, camera_matrix):
 
     # Compute 2D Homogenous Coordinates
     homogeneous_2d = np.array([p_2d[0], p_2d[1], 1]).T
-    return (inv_camera_matrix @ (homogeneous_2d * depth)).T
+
+    # Compute and Return 3D Camera Coordinates
+    camera_coordinates = (inv_camera_matrix @ (homogeneous_2d * depth)).T
+    return camera_coordinates
                                  
 
-# Define a Function to Extract Feature Points
+# Define a Function to Compute Reprojection Error
 def ComputeReprojError(feature_points, camera_param):
     
     """
     Calculates the reprojection error for a feature point.
 
     Args:
-        P_l_I_i (numpy.ndarray): 2D feature point in image i.
+        feature_points (numpy.ndarray): 2D feature point in current image.
         T_c_w_j (numpy.ndarray): Transform from world to camera frame j.
         T_c_w_i (numpy.ndarray): Transform from world to camera frame i.
         P_n_w (numpy.ndarray): 3D point in world coordinates.
         z_n_c_i (float): Depth of the 3D point in camera frame i.
-        K (numpy.ndarray): Camera intrinsic matrix.
+        camera_param (numpy.ndarray): Camera intrinsic matrix.
 
     Returns:
         numpy.ndarray: Reprojection error (2D vector).
     """
+
+    # Initialise Vectors
     image_coordinates = np.empty([0, 3])
+
+    # For every Feature Point
     for ind in range(feature_points.num_fp):
+
+        # Compute 3D Camera Coordinates from 2D Image Coordinates
         image_coordinates = np.vstack([image_coordinates, [inverse_project_points(feature_points.left_pts[ind], feature_points.depth[ind], camera_param['left_projection'])]])
-    print(image_coordinates)
