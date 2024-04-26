@@ -16,20 +16,23 @@ import os
 import numpy as np
 import time
 
+DATASET = './Dataset_3'
 
 # Define Main Function
 if __name__ == "__main__":
 
     # Read Calib File
-    camera_param = ReadCameraParam('./Dataset_3/calib.txt')
+    camera_param = ReadCameraParam(DATASET + '/calib.txt')
+    T_true_path = DATASET + '/true_T.txt'
+    T_true = np.loadtxt(T_true_path, dtype=np.float64)
 
     # Get the Folders for Left & Right Stereo Images
-    left_images_folder = 'Dataset_3/Left_Images/'
-    right_images_folder = 'Dataset_3/Right_Images/'
+    left_images_folder = DATASET + '/Left_Images/'
+    right_images_folder = DATASET + '/Right_Images/'
 
     # Get the Images Path list
-    left_images = os.listdir(left_images_folder)
-    right_images = os.listdir(right_images_folder)
+    left_images = sorted(os.listdir(left_images_folder))
+    right_images = sorted(os.listdir(right_images_folder))
 
     # Get the Path of Images
     left_images = [os.path.abspath(left_images_folder + '/' + left_image) for left_image in left_images]
@@ -49,10 +52,6 @@ if __name__ == "__main__":
         # Read the Images
         left_image = cv2.imread(left_images[ind])
         right_image = cv2.imread(right_images[ind])
-
-        # Resize Images
-        left_image = cv2.resize(left_image, (650, 350))
-        right_image = cv2.resize(right_image, (650, 350))
 
         ########################### Perform YOLO on Both Images ########################
         left_boxes, right_boxes = PerformYolo(left_image, right_image)
