@@ -42,15 +42,18 @@ def FilterFeaturePoints(left_boxes, right_boxes, feature_points, num_clusters = 
     for idx in range(feature_points.num_fp):
         left_point = feature_points.left_pts[idx]
         right_point = feature_points.right_pts[idx]
+        left_found = False
+        right_found = False
         for left_box in left_boxes:
-            # Classify points based on clusters
             if check_point_in_bbox(left_box, left_point):
                 points_inside_bounding_box.left_pts = np.vstack([points_inside_bounding_box.left_pts, feature_points.left_pts[idx]])
                 points_inside_bounding_box.left_descriptors = np.vstack([points_inside_bounding_box.left_descriptors, feature_points.left_descriptors[idx]])
                 points_inside_bounding_box.disparity = np.vstack([points_inside_bounding_box.disparity, feature_points.disparity[idx]])
                 points_inside_bounding_box.depth = np.vstack([points_inside_bounding_box.depth, feature_points.depth[idx]])
                 points_inside_bounding_box.pt3ds = np.vstack([points_inside_bounding_box.pt3ds, feature_points.pt3ds[idx]])
-            else:
+                left_found = True
+                break
+            if not left_found:
                 static_feature_points.left_pts = np.vstack([static_feature_points.left_pts, feature_points.left_pts[idx]])
                 static_feature_points.left_descriptors = np.vstack([static_feature_points.left_descriptors, feature_points.left_descriptors[idx]])
                 static_feature_points.disparity = np.vstack([static_feature_points.disparity, feature_points.disparity[idx]])
@@ -58,14 +61,15 @@ def FilterFeaturePoints(left_boxes, right_boxes, feature_points, num_clusters = 
                 static_feature_points.pt3ds = np.vstack([static_feature_points.pt3ds, feature_points.pt3ds[idx]])
 
         for right_box in right_boxes:
-            # Classify points based on clusters
             if check_point_in_bbox(right_box, right_point):
                 points_inside_bounding_box.right_pts = np.vstack([points_inside_bounding_box.right_pts, feature_points.right_pts[idx]])
                 points_inside_bounding_box.right_descriptors = np.vstack([points_inside_bounding_box.right_descriptors, feature_points.right_descriptors[idx]])
                 points_inside_bounding_box.disparity = np.vstack([points_inside_bounding_box.disparity, feature_points.disparity[idx]])
                 points_inside_bounding_box.depth = np.vstack([points_inside_bounding_box.depth, feature_points.depth[idx]])
                 points_inside_bounding_box.pt3ds = np.vstack([points_inside_bounding_box.pt3ds, feature_points.pt3ds[idx]])
-            else:
+                right_found = True
+                break
+            if not right_found:
                 static_feature_points.right_pts = np.vstack([static_feature_points.right_pts, feature_points.right_pts[idx]])
                 static_feature_points.right_descriptors = np.vstack([static_feature_points.right_descriptors, feature_points.right_descriptors[idx]])
                 static_feature_points.disparity = np.vstack([static_feature_points.disparity, feature_points.disparity[idx]])
@@ -99,7 +103,7 @@ def FilterFeaturePoints(left_boxes, right_boxes, feature_points, num_clusters = 
     feature_depths = np.array(feature_depths).reshape(-1, 1)
 
     # Apply K-means clustering
-    kmeans = KMeans(n_clusters = num_clusters, random_state = 42).fit(feature_depths)
+    kmeans = KMeans(n_clusters = num_clusters, random_state = 0).fit(feature_depths)
     labels = kmeans.labels_
 
     # Classify points based on clusters
@@ -126,4 +130,4 @@ def FilterFeaturePoints(left_boxes, right_boxes, feature_points, num_clusters = 
     dynamic_feature_points.num_fp = dynamic_feature_points.left_pts.shape[0]
     
     # Return the Static and Dynamic Feature Points
-    return static_feature_points, points_inside_bounding_box
+    return static_feature_points, dynamic_feature_points
