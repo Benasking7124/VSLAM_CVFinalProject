@@ -1,6 +1,8 @@
-# Import Necessary Libraries
+# Import Necessary Modules
 from feature_points import FeaturePoints
 from feature_matching import FeatureMatching
+
+# Import Necessary Libraries
 import numpy as np
 import cv2
 

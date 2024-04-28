@@ -5,7 +5,7 @@ from feature_extraction import FeatureExtraction
 from feature_extraction import FeatureExtraction
 from filter_feature_points import FilterFeaturePoints
 from frame_matching import FrameMatching
-from PoseEstimator import PoseEstimator
+from pose_estimator import PoseEstimator
 from bounding_box_association import BoundingBoxAssociation
 from display_images import DisplayImages
 from draw_trajectory import DrawTrajectory
@@ -16,19 +16,21 @@ import os
 import numpy as np
 import time
 
-DATASET = './Dataset_3'
+
+# Define Dataset Folder
+dataset = './Dataset_3'
 
 # Define Main Function
 if __name__ == "__main__":
 
     # Read Calib File
-    camera_param = ReadCameraParam(DATASET + '/calib.txt')
-    T_true_path = DATASET + '/true_T.txt'
+    camera_param = ReadCameraParam(dataset + '/calib.txt')
+    T_true_path = dataset + '/true_T.txt'
     T_true = np.loadtxt(T_true_path, dtype=np.float64)
 
     # Get the Folders for Left & Right Stereo Images
-    left_images_folder = DATASET + '/Left_Images/'
-    right_images_folder = DATASET + '/Right_Images/'
+    left_images_folder = dataset + '/Left_Images/'
+    right_images_folder = dataset + '/Right_Images/'
 
     # Get the Images Path list
     left_images = sorted(os.listdir(left_images_folder))
@@ -63,13 +65,13 @@ if __name__ == "__main__":
         ######################## Remove Static Features using Depth map ################
         static_feature_points, dynamic_feature_points = FilterFeaturePoints(left_boxes, right_boxes, feature_points, num_clusters = 2)
 
-        # ###################### Perform Bounding Box Association ########################
+        ###################### Perform Bounding Box Association ########################
         #associated_bounding_boxes = BoundingBoxAssociation(left_boxes, right_boxes, dynamic_feature_points)
 
-        # ############################## Display both the Images #########################
+        ############################## Display both the Images #########################
         DisplayImages(left_image, right_image, left_boxes, right_boxes, static_feature_points, dynamic_feature_points)
 
-        # ############################## Match Feature Between Frames #########################
+        ############################## Match Feature Between Frames #########################
         paired_static_features = FrameMatching(previous_feature_points, feature_points)
         previous_feature_points = feature_points
 

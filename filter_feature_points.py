@@ -1,9 +1,14 @@
+# Import Necessary Modules
+from feature_points import FeaturePoints
+
 # Import Necessary Libraries
 import numpy as np
 from sklearn.cluster import KMeans
-from feature_points import FeaturePoints
 
+
+# Define a Function to Check if a Point lies in a Bounding Box
 def check_point_in_bbox(bbox, point):
+
     # Get the Coordinates and Points
     x1, y1, x2, y2 = bbox[0], bbox[1], bbox[2], bbox[3]
     x, y = point[0], point[1]
@@ -15,8 +20,7 @@ def check_point_in_bbox(bbox, point):
         return False
 
 
-
-# Define a Function to Filter Feature Points by Depth
+# Define a Function to Filter Feature Points by Depth using K-Means
 def FilterFeaturePoints(left_boxes, right_boxes, feature_points, num_clusters = 2):
     
     # Initialise Static Feature points
@@ -30,59 +34,79 @@ def FilterFeaturePoints(left_boxes, right_boxes, feature_points, num_clusters = 
     static_feature_points.pt3ds = np.empty([0, 3])
 
     # Initialise Points Inside Bounding Box
-    points_inside_bounding_box = FeaturePoints()
-    points_inside_bounding_box.left_pts = np.empty([0, 2])
-    points_inside_bounding_box.left_descriptors = np.empty([0, 32], dtype = np.uint8)
-    points_inside_bounding_box.right_pts = np.empty([0, 2])
-    points_inside_bounding_box.right_descriptors = np.empty([0, 32], dtype = np.uint8)
-    points_inside_bounding_box.disparity = np.empty([0, 1])
-    points_inside_bounding_box.depth = np.empty([0, 1])
-    points_inside_bounding_box.pt3ds = np.empty([0, 3])
+    points_inside_bbox = FeaturePoints()
+    points_inside_bbox.left_pts = np.empty([0, 2])
+    points_inside_bbox.left_descriptors = np.empty([0, 32], dtype = np.uint8)
+    points_inside_bbox.right_pts = np.empty([0, 2])
+    points_inside_bbox.right_descriptors = np.empty([0, 32], dtype = np.uint8)
+    points_inside_bbox.disparity = np.empty([0, 1])
+    points_inside_bbox.depth = np.empty([0, 1])
+    points_inside_bbox.pt3ds = np.empty([0, 3])
 
+    # For every Feature Point
     for idx in range(feature_points.num_fp):
+
+        # Get the Left and Right Point
         left_point = feature_points.left_pts[idx]
         right_point = feature_points.right_pts[idx]
         left_found = False
         right_found = False
+
+        # For every Bounding Box in Left Image
         for left_box in left_boxes:
+
+            # If Point lies inside Bounding Box, Append the Points into Bbox List
             if check_point_in_bbox(left_box, left_point):
-                points_inside_bounding_box.left_pts = np.vstack([points_inside_bounding_box.left_pts, feature_points.left_pts[idx]])
-                points_inside_bounding_box.left_descriptors = np.vstack([points_inside_bounding_box.left_descriptors, feature_points.left_descriptors[idx]])
-                points_inside_bounding_box.disparity = np.vstack([points_inside_bounding_box.disparity, feature_points.disparity[idx]])
-                points_inside_bounding_box.depth = np.vstack([points_inside_bounding_box.depth, feature_points.depth[idx]])
-                points_inside_bounding_box.pt3ds = np.vstack([points_inside_bounding_box.pt3ds, feature_points.pt3ds[idx]])
+                points_inside_bbox.left_pts = np.vstack([points_inside_bbox.left_pts, feature_points.left_pts[idx]])
+                points_inside_bbox.left_descriptors = np.vstack([points_inside_bbox.left_descriptors, feature_points.left_descriptors[idx]])
+                points_inside_bbox.disparity = np.vstack([points_inside_bbox.disparity, feature_points.disparity[idx]])
+                points_inside_bbox.depth = np.vstack([points_inside_bbox.depth, feature_points.depth[idx]])
+                points_inside_bbox.pt3ds = np.vstack([points_inside_bbox.pt3ds, feature_points.pt3ds[idx]])
+                
+                # Set flag and Break Loop
                 left_found = True
                 break
-            if not left_found:
-                static_feature_points.left_pts = np.vstack([static_feature_points.left_pts, feature_points.left_pts[idx]])
-                static_feature_points.left_descriptors = np.vstack([static_feature_points.left_descriptors, feature_points.left_descriptors[idx]])
-                static_feature_points.disparity = np.vstack([static_feature_points.disparity, feature_points.disparity[idx]])
-                static_feature_points.depth = np.vstack([static_feature_points.depth, feature_points.depth[idx]])
-                static_feature_points.pt3ds = np.vstack([static_feature_points.pt3ds, feature_points.pt3ds[idx]])
+        
+        # If Point not lies in any Bounding Box, Append the Points into Static
+        if not left_found:
+            static_feature_points.left_pts = np.vstack([static_feature_points.left_pts, feature_points.left_pts[idx]])
+            static_feature_points.left_descriptors = np.vstack([static_feature_points.left_descriptors, feature_points.left_descriptors[idx]])
+            static_feature_points.disparity = np.vstack([static_feature_points.disparity, feature_points.disparity[idx]])
+            static_feature_points.depth = np.vstack([static_feature_points.depth, feature_points.depth[idx]])
+            static_feature_points.pt3ds = np.vstack([static_feature_points.pt3ds, feature_points.pt3ds[idx]])
 
+        # For every Bounding Box in Right Image
         for right_box in right_boxes:
+
+            # If Point lies inside Bounding Box, Append the Points into Bbox List
             if check_point_in_bbox(right_box, right_point):
-                points_inside_bounding_box.right_pts = np.vstack([points_inside_bounding_box.right_pts, feature_points.right_pts[idx]])
-                points_inside_bounding_box.right_descriptors = np.vstack([points_inside_bounding_box.right_descriptors, feature_points.right_descriptors[idx]])
-                points_inside_bounding_box.disparity = np.vstack([points_inside_bounding_box.disparity, feature_points.disparity[idx]])
-                points_inside_bounding_box.depth = np.vstack([points_inside_bounding_box.depth, feature_points.depth[idx]])
-                points_inside_bounding_box.pt3ds = np.vstack([points_inside_bounding_box.pt3ds, feature_points.pt3ds[idx]])
+                points_inside_bbox.right_pts = np.vstack([points_inside_bbox.right_pts, feature_points.right_pts[idx]])
+                points_inside_bbox.right_descriptors = np.vstack([points_inside_bbox.right_descriptors, feature_points.right_descriptors[idx]])
+                points_inside_bbox.disparity = np.vstack([points_inside_bbox.disparity, feature_points.disparity[idx]])
+                points_inside_bbox.depth = np.vstack([points_inside_bbox.depth, feature_points.depth[idx]])
+                points_inside_bbox.pt3ds = np.vstack([points_inside_bbox.pt3ds, feature_points.pt3ds[idx]])
+                
+                # Set flag and Break Loop
                 right_found = True
                 break
-            if not right_found:
-                static_feature_points.right_pts = np.vstack([static_feature_points.right_pts, feature_points.right_pts[idx]])
-                static_feature_points.right_descriptors = np.vstack([static_feature_points.right_descriptors, feature_points.right_descriptors[idx]])
-                static_feature_points.disparity = np.vstack([static_feature_points.disparity, feature_points.disparity[idx]])
-                static_feature_points.depth = np.vstack([static_feature_points.depth, feature_points.depth[idx]])
-                static_feature_points.pt3ds = np.vstack([static_feature_points.pt3ds, feature_points.pt3ds[idx]])
+        
+        # If Point not lies in any Bounding Box, Append the Points into Static
+        if not right_found:
+            static_feature_points.right_pts = np.vstack([static_feature_points.right_pts, feature_points.right_pts[idx]])
+            static_feature_points.right_descriptors = np.vstack([static_feature_points.right_descriptors, feature_points.right_descriptors[idx]])
+            static_feature_points.disparity = np.vstack([static_feature_points.disparity, feature_points.disparity[idx]])
+            static_feature_points.depth = np.vstack([static_feature_points.depth, feature_points.depth[idx]])
+            static_feature_points.pt3ds = np.vstack([static_feature_points.pt3ds, feature_points.pt3ds[idx]])
     
-    points_inside_bounding_box.num_fp = np.minimum(points_inside_bounding_box.left_pts.shape[0], points_inside_bounding_box.right_pts.shape[0])
+    # Set the Size of Feature Point Classes
+    points_inside_bbox.num_fp = np.minimum(points_inside_bbox.left_pts.shape[0], points_inside_bbox.right_pts.shape[0])
     static_feature_points.num_fp = np.minimum(static_feature_points.left_pts.shape[0], static_feature_points.right_pts.shape[0])
 
     # Initialise List to Store Feature Depths and Coordinates
     feature_depths = []
     feature_coords = []
 
+    # Initialise Dynamic Feature points
     dynamic_feature_points = FeaturePoints()
     dynamic_feature_points.left_pts = np.empty([0, 2])
     dynamic_feature_points.left_descriptors = np.empty([0, 32], dtype = np.uint8)
@@ -91,39 +115,40 @@ def FilterFeaturePoints(left_boxes, right_boxes, feature_points, num_clusters = 
     dynamic_feature_points.disparity = np.empty([0, 1])
     dynamic_feature_points.depth = np.empty([0, 1])
     dynamic_feature_points.pt3ds = np.empty([0, 3])
+    
     # Store Depth and Coordinates for every Feature Point
-    for ind in range(points_inside_bounding_box.num_fp):
+    for ind in range(points_inside_bbox.num_fp):
 
         # Get the Left and Right Coordinates
-        left_x, left_y, right_x, right_y = int(points_inside_bounding_box.left_pts[ind][0]), int(points_inside_bounding_box.left_pts[ind][1]), int(points_inside_bounding_box.right_pts[ind][0]), int(points_inside_bounding_box.right_pts[ind][1])
-        feature_depths.append(points_inside_bounding_box.depth[ind])
+        left_x, left_y, right_x, right_y = int(points_inside_bbox.left_pts[ind][0]), int(points_inside_bbox.left_pts[ind][1]), int(points_inside_bbox.right_pts[ind][0]), int(points_inside_bbox.right_pts[ind][1])
+        feature_depths.append(points_inside_bbox.depth[ind])
         feature_coords.append([left_x, left_y, right_x, right_y])
 
     # Convert depth list to numpy array for clustering
     feature_depths = np.array(feature_depths).reshape(-1, 1)
 
     # Apply K-means clustering
-    kmeans = KMeans(n_clusters = num_clusters, random_state = 0).fit(feature_depths)
+    kmeans = KMeans(n_clusters = num_clusters, random_state = 42).fit(feature_depths)
     labels = kmeans.labels_
 
     # Classify points based on clusters
     for idx, label in enumerate(labels):
-        if label == 1:
-            static_feature_points.left_pts = np.vstack([static_feature_points.left_pts, feature_points.left_pts[idx]])
-            static_feature_points.left_descriptors = np.vstack([static_feature_points.left_descriptors, feature_points.left_descriptors[idx]])
-            static_feature_points.right_pts = np.vstack([static_feature_points.right_pts, feature_points.right_pts[idx]])
-            static_feature_points.right_descriptors = np.vstack([static_feature_points.right_descriptors, feature_points.right_descriptors[idx]])
-            static_feature_points.disparity = np.vstack([static_feature_points.disparity, feature_points.disparity[idx]])
-            static_feature_points.depth = np.vstack([static_feature_points.depth, feature_points.depth[idx]])
-            static_feature_points.pt3ds = np.vstack([static_feature_points.pt3ds, feature_points.pt3ds[idx]])
+        if label == 0:
+            static_feature_points.left_pts = np.vstack([static_feature_points.left_pts, points_inside_bbox.left_pts[idx]])
+            static_feature_points.left_descriptors = np.vstack([static_feature_points.left_descriptors, points_inside_bbox.left_descriptors[idx]])
+            static_feature_points.right_pts = np.vstack([static_feature_points.right_pts, points_inside_bbox.right_pts[idx]])
+            static_feature_points.right_descriptors = np.vstack([static_feature_points.right_descriptors, points_inside_bbox.right_descriptors[idx]])
+            static_feature_points.disparity = np.vstack([static_feature_points.disparity, points_inside_bbox.disparity[idx]])
+            static_feature_points.depth = np.vstack([static_feature_points.depth, points_inside_bbox.depth[idx]])
+            static_feature_points.pt3ds = np.vstack([static_feature_points.pt3ds, points_inside_bbox.pt3ds[idx]])
         else:
-            dynamic_feature_points.left_pts = np.vstack([dynamic_feature_points.left_pts, feature_points.left_pts[idx]])
-            dynamic_feature_points.left_descriptors = np.vstack([dynamic_feature_points.left_descriptors, feature_points.left_descriptors[idx]])
-            dynamic_feature_points.right_pts = np.vstack([dynamic_feature_points.right_pts, feature_points.right_pts[idx]])
-            dynamic_feature_points.right_descriptors = np.vstack([dynamic_feature_points.right_descriptors, feature_points.right_descriptors[idx]])
-            dynamic_feature_points.disparity = np.vstack([dynamic_feature_points.disparity, feature_points.disparity[idx]])
-            dynamic_feature_points.depth = np.vstack([dynamic_feature_points.depth, feature_points.depth[idx]])
-            dynamic_feature_points.pt3ds = np.vstack([dynamic_feature_points.pt3ds, feature_points.pt3ds[idx]])
+            dynamic_feature_points.left_pts = np.vstack([dynamic_feature_points.left_pts, points_inside_bbox.left_pts[idx]])
+            dynamic_feature_points.left_descriptors = np.vstack([dynamic_feature_points.left_descriptors, points_inside_bbox.left_descriptors[idx]])
+            dynamic_feature_points.right_pts = np.vstack([dynamic_feature_points.right_pts, points_inside_bbox.right_pts[idx]])
+            dynamic_feature_points.right_descriptors = np.vstack([dynamic_feature_points.right_descriptors, points_inside_bbox.right_descriptors[idx]])
+            dynamic_feature_points.disparity = np.vstack([dynamic_feature_points.disparity, points_inside_bbox.disparity[idx]])
+            dynamic_feature_points.depth = np.vstack([dynamic_feature_points.depth, points_inside_bbox.depth[idx]])
+            dynamic_feature_points.pt3ds = np.vstack([dynamic_feature_points.pt3ds, points_inside_bbox.pt3ds[idx]])
     
     # Set the Number of Feature Points
     static_feature_points.num_fp = static_feature_points.left_pts.shape[0]
