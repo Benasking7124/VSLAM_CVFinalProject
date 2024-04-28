@@ -39,7 +39,7 @@ def draw_frame_matching(img, paired_kps, pre_T_true, cur_T_true, projection):
     plt.imshow(img)
     plt.show()
 
-DATASET = './Dataset_1'
+DATASET = './Dataset_4'
 
 if __name__ == "__main__":
     
@@ -92,8 +92,13 @@ if __name__ == "__main__":
         # pe.ComputeReprojError(T_true[ind])
         T_current = pe.minimize_error()
         # print("Cal: ", pe.ComputeReprojError(T_current))
-        # print("True: ", pe.ComputeReprojError(T_true[ind]))
-        print(T_current.reshape(4, 4))
+        # print("True: ", pe.ComputeReprojError(np.vstack([T_true[ind].reshape(3, 4), [0, 0, 0, 1]]).flatten()))
+        a = T_current.reshape(4, 4)
+        print(a)
+        print("------------")
+        b = np.vstack([T_true[ind].reshape(3, 4), [0, 0, 0, 1]])
+        print(b)
+        print(np.linalg.inv(b))
         # T_current = np.vstack([T_current.reshape(3, 4), [0, 0, 0, 1]])
         # T_pre = np.vstack([T_true[ind - 1].reshape(3, 4), [0, 0, 0, 1]])
         T_pre = np.vstack([Transformation_list[ind - 1].reshape(3, 4), [0, 0, 0, 1]])
