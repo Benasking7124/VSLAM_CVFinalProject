@@ -21,7 +21,7 @@ def FeatureExtraction(left_img, right_img, camera_param):
     """
 
     # Create an ORB Object to Extract Keypoints
-    orb = cv2.ORB_create(edgeThreshold = 51)
+    orb = cv2.ORB_create(3000)
 
     # Find the Keypoints of Left and Right Images
     left_keypoints, left_desc = orb.detectAndCompute(left_img, None) 
@@ -57,6 +57,8 @@ def FeatureExtraction(left_img, right_img, camera_param):
         disparity = left_keypoints[left_index][0] - right_keypoints[right_index][0]
         if (disparity == 0):
             continue
+    
+        f_result = np.array([[left_keypoints[left_index][0]], [left_keypoints[left_index][1]], [1]]).T @ camera_param['fundamental'] @ np.array([[right_keypoints[right_index][0]], [right_keypoints[right_index][1]], [1]])
         
         # Save the Coordinates of Feature point of Left Image
         feature_points.left_pts = np.vstack([feature_points.left_pts, [left_keypoints[left_index][0], left_keypoints[left_index][1]]])
