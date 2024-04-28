@@ -19,13 +19,13 @@ class PoseEstimator:
         self.T_previous = T_previous.reshape(3, 4)
 
         # Set the current transformatnio matrix to identity matrix
-        self.T_current = np.eye(3, 4).flatten()
+        self.T_current = np.eye(4, 4).flatten()
 
     # Define a Function to Compute Reprojection Error
     def ComputeReprojError(self, T_current):
     
         temp = np.vstack((self.T_previous.reshape(3, 4), [0, 0, 0, 1])) @ self.pt3Ds
-        temp_2 = np.linalg.inv(np.vstack((T_current.reshape(3, 4), [0, 0, 0, 1]))) @ temp
+        temp_2 = np.linalg.inv(T_current.reshape(4, 4)) @ temp
 
         projected_homogeneous = self.projection @ temp_2
 

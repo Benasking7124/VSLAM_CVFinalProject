@@ -39,7 +39,7 @@ def draw_frame_matching(img, paired_kps, pre_T_true, cur_T_true, projection):
     plt.imshow(img)
     plt.show()
 
-DATASET = './Dataset_3'
+DATASET = './Dataset_1'
 
 if __name__ == "__main__":
     
@@ -91,11 +91,13 @@ if __name__ == "__main__":
         pe = PoseEstimator(paired_static_features, camera_param['left_projection'], T_true[ind - 1])
         # pe.ComputeReprojError(T_true[ind])
         T_current = pe.minimize_error()
-        print("Cal: ", pe.ComputeReprojError(T_current))
-        print("True: ", pe.ComputeReprojError(T_true[ind]))
-        T_current = np.vstack([T_current.reshape(3, 4), [0, 0, 0, 1]])
+        # print("Cal: ", pe.ComputeReprojError(T_current))
+        # print("True: ", pe.ComputeReprojError(T_true[ind]))
+        print(T_current.reshape(4, 4))
+        # T_current = np.vstack([T_current.reshape(3, 4), [0, 0, 0, 1]])
+        # T_pre = np.vstack([T_true[ind - 1].reshape(3, 4), [0, 0, 0, 1]])
         T_pre = np.vstack([Transformation_list[ind - 1].reshape(3, 4), [0, 0, 0, 1]])
-        T_current = T_pre @ T_current
+        T_current = T_pre @ T_current.reshape(4, 4)
         Transformation_list = np.vstack([Transformation_list, T_current[0:3, :].flatten()])
 
     # # Plot the error between ground truth and calculated
