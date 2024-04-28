@@ -21,3 +21,6 @@ class FeaturePoints:
 
         # Initialise 3D Point Coordinates in Camera Coordinates
         self.pt3ds = 0
+
+        # Initialise Bounding Box ID
+        self.bbox_id = 0
