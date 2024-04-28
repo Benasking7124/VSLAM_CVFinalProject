@@ -4,6 +4,7 @@ from read_camera_param import ReadCameraParam
 from frame_matching import FrameMatching
 from scipy.stats import entropy
 from perform_yolo import PerformYolo
+import visulizations
 
 # Import Necessary Libraries
 import cv2
@@ -11,68 +12,6 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
-def draw_features_on_image(img_1, img_2, img1_pts, img2_pts, pic_title):
-        
-        radius = 5
-        color = (0, 255, 0)
-        thickness = 1
-
-        img_1_copy = img_1.copy()
-        img_2_copy = img_2.copy()
-
-
-        for i, (x, y) in enumerate(img1_pts):
-            cv2.circle(img_1_copy, (int(x), int(y)), radius, color, thickness)
-
-        for i, (x, y) in enumerate(img2_pts):
-            cv2.circle(img_2_copy, (int(x), int(y)), radius, color, thickness)
-
-
-        fig = plt.figure()
-
-        plt.title(pic_title)
-        plt.imshow(np.vstack((img_1_copy, img_2_copy)))
-
-        for (x1, y1), (x2, y2) in zip(img1_pts, img2_pts):
-            plt.plot([x1, x2], [y1, y2+img_1_copy.shape[0]], 'b', linewidth=0.5)
-        
-
-        plt.show()
-
-def visualize_KL(img_1, img_2, img1_pts, img2_pts, kl_values, left_boxes, right_boxes, pic_title):
-        
-        radius = 2
-        color = (0, 255, 0)
-        thickness = 2
-
-        img_1_copy = img_1.copy()
-        img_2_copy = img_2.copy()
-
-
-        for i, (x, y) in enumerate(img1_pts):
-            cv2.circle(img_1_copy, (int(x), int(y)), radius, color, thickness)
-
-        for i, (x1, y1, x2, y2) in enumerate(left_boxes):
-            cv2.rectangle(img_1_copy, (x1, y1), (x2, y2), (0, 255, 0), 1)
-
-        for i, (x, y) in enumerate(img2_pts):
-            cv2.circle(img_2_copy, (int(x), int(y)), radius, color, thickness)
-
-        for i, (x1, y1, x2, y2) in enumerate(right_boxes):
-            cv2.rectangle(img_2_copy, (x1, y1), (x2, y2), (0, 255, 0), 1)
-
-
-        fig = plt.figure()
-
-        plt.title(pic_title)
-        plt.imshow(np.vstack((img_1_copy, img_2_copy)))
-
-        for (x1, y1), (x2, y2), one_kl_value in zip(img1_pts, img2_pts, kl_values):
-            plt.plot([x1, x2], [y1, y2+img_1_copy.shape[0]], 'b', linewidth=0.5)
-            plt.text(x1, y1, one_kl_value, fontsize=8, color='red', rotation=45)
-        
-
-        plt.show()
 
 def normlize_descriptors(desc):
     norm_desc = np.abs(desc)
@@ -92,14 +31,13 @@ def kl_divergence_scipy(P, Q, epsilon=1e-10):
     predicted_points = project_points(T, world_points)
     return np.linalg.norm(predicted_points - image_points[:, :2], axis=1).sum()  # Sum of Euclidean distances
 
-
 def compute_error(pred_points, observed_points):
 
     return np.linalg.norm(pred_points - observed_points, axis=1).sum()
 
 
 # Define Main Function
-if __name__ == "__main__":
+def PerformKL(left_image, right_image, potential_dynamic_feature_points):
 
     # Get the Folders for Left & Right Stereo Images
     left_images_folder = 'Dataset_3/Left_Images/'
@@ -114,8 +52,8 @@ if __name__ == "__main__":
     right_images = sorted(right_images, key=lambda x:int(x.split('.')[0]))
 
     # Get the Path of Images
-    left_images = [os.path.abspath(left_images_folder + '/' + left_image) for left_image in left_images]
-    right_images = [os.path.abspath(right_images_folder + '/' + right_image) for right_image in right_images]
+    left_images = [os.path.abspath(left_images_folder + '/' + left_image) for left_image in left_images][-20:]
+    right_images = [os.path.abspath(right_images_folder + '/' + right_image) for right_image in right_images][-20:]
     
     
     file_path = './Dataset_3/true_T.txt'
@@ -179,14 +117,17 @@ if __name__ == "__main__":
                 current_2ds.append(one_pair[:2])
 
 
-        # Visualization to check feature matching between time frames, predicted points vs observed points
-        draw_features_on_image(left_image, next_left_image, previous_2ds, predicted_list, 'Observed Fpts in T0 & Predicted Fpts in T1')
-        draw_features_on_image(left_image, next_left_image, previous_2ds, current_2ds, 'Observed Fpts Matching between T0 and T1')
-        draw_features_on_image(next_left_image, next_left_image, predicted_list, current_2ds, 'Compare Predicted Fpts in T1 & Observed Fpts in T1')
+        # Visualizations
+        visulizations.draw_features_on_image_vertical(left_image, next_left_image, previous_2ds, predicted_list, 
+                                                      pic_title='Observed Fpts in T0 vs Predicted Fpts in T1')
 
+        visulizations.draw_features_on_image_vertical(left_image, next_left_image, previous_2ds, current_2ds, 
+                                                      pic_title='Observed Fpts Matching between T0 and T1')
 
-        error = compute_error(predicted_list, current_2ds)
-        print(error)
+        visulizations.draw_features_on_image_vertical(next_left_image, next_left_image, predicted_list, current_2ds, 
+                                                      pic_title='Predicted Fpts in T1 vs Observed Fpts in T1')
+        visulizations.draw_features_on_image_together(next_left_image, next_left_image, predicted_list, current_2ds, 
+                                                      pic_title='Predicted Fpts in T1 vs Observed Fpts in T1')
 
 
         orb = cv2.ORB_create()
@@ -201,6 +142,7 @@ if __name__ == "__main__":
 
         kl_values = []
 
+
         for one_pred_desc, one_observed_desc in zip(preds_descriptors, observed_descriptors):
 
             norm_one_pred_desc = normlize_descriptors(one_pred_desc)
@@ -210,8 +152,8 @@ if __name__ == "__main__":
 
             kl_values.append(round(one_entropy, 3))
         
+        visulizations.visualize_KL(next_left_image, next_left_image, predicted_list, current_2ds, kl_values, left_boxes, left_boxes, 
+                                   font_size=5, pic_title='Compare Predicted Fpts in T1 & Observed Fpts in T1')
         
-        visualize_KL(next_left_image, next_left_image, predicted_list, current_2ds, 
-                     kl_values, left_boxes, left_boxes, 'Compare Predicted Fpts in T1 & Observed Fpts in T1')
 
         print()

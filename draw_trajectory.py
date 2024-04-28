@@ -6,9 +6,6 @@ from scipy.spatial.transform import Rotation as R
 
 def DrawTrajectory(T):
 
-    file_path = './Dataset_1/true_T.txt'
-    true_T = np.loadtxt(file_path, dtype=np.float64)
-
     x = T[:, 3] # left right
     y = T[:, 7] # height
     z = T[:, 11] # forward backword
@@ -34,10 +31,11 @@ def DrawTrajectory(T):
 
     plt.show()
 
+    # Draw Euler Angles ------------------------------------------------------------
+
     # euler_angle_x = []
     # euler_angle_y = []
     # euler_angle_z = []
-
     
     # for one_true in true_T:
     #     # Convert the rotation matrix to a rotation object
@@ -52,8 +50,6 @@ def DrawTrajectory(T):
     #     euler_angle_z.append(euler_angles_deg[2])
 
     # fig = plt.figure()
-
-
 
     # plt.subplot(3, 1, 1)
     # plt.title('Euler angle x')
@@ -73,10 +69,15 @@ def DrawTrajectory(T):
 
     # plt.show()
 
+    # ------------------------------------------------------------------------------
+
+
+# Test codes
 if __name__ == "__main__":
 
-    file_path = './Dataset_3/true_T.txt'
+    file_path = './Dataset_4/true_T.txt'
     true_T = np.loadtxt(file_path, dtype=np.float64)
-    DrawTrajectory(true_T[:11])
+    
+    DrawTrajectory(true_T)
 
 

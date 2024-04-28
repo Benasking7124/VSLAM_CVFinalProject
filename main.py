@@ -37,8 +37,8 @@ if __name__ == "__main__":
     right_images = sorted(os.listdir(right_images_folder))
 
     # Get the Path of Images
-    left_images = [os.path.abspath(left_images_folder + '/' + left_image) for left_image in left_images]
-    right_images = [os.path.abspath(right_images_folder + '/' + right_image) for right_image in right_images]
+    left_images = [os.path.abspath(left_images_folder + '/' + left_image) for left_image in left_images][-5:]
+    right_images = [os.path.abspath(right_images_folder + '/' + right_image) for right_image in right_images][-5:]
 
     # Read the First Frame of Left and Right Images
     left_image = cv2.imread(left_images[0])
@@ -69,7 +69,7 @@ if __name__ == "__main__":
         #associated_bounding_boxes = BoundingBoxAssociation(left_boxes, right_boxes, dynamic_feature_points)
 
         ############################## Display both the Images #########################
-        DisplayImages(left_image, right_image, left_boxes, right_boxes, static_feature_points, dynamic_feature_points)
+        # DisplayImages(left_image, right_image, left_boxes, right_boxes, static_feature_points, dynamic_feature_points)
 
         ############################## Match Feature Between Frames #########################
         paired_static_features = FrameMatching(previous_feature_points, feature_points)
