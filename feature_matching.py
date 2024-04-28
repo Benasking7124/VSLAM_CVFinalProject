@@ -48,13 +48,13 @@ def FeatureMatching(keypoints1, descriptors1, keypoints2, descrptors2):
     # Ratio Test 1 -> 2
     keep_matches_1 = []
     for (m, n) in matches_1_2:
-        if (m.distance / n.distance) < 0.85:
+        if (m.distance / n.distance) < 0.7:
             keep_matches_1.append(m)
 
     # Ratio Test 2 -> 1
     keep_matches_2 = []
     for (m, n) in matches_2_1:
-        if (m.distance / n.distance) < 0.85:
+        if (m.distance / n.distance) < 0.7:
             keep_matches_2.append(m)
 
     # Bi-directional Check
@@ -68,7 +68,7 @@ def FeatureMatching(keypoints1, descriptors1, keypoints2, descrptors2):
     if len(bi_direction_matches)>10:
         src_pts = np.float32([[keypoints1[m.queryIdx][0], keypoints1[m.queryIdx][1]] for m in bi_direction_matches])
         dst_pts = np.float32([[keypoints2[m.trainIdx][0], keypoints2[m.trainIdx][1]] for m in bi_direction_matches])
-        _, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 30)
+        _, mask = cv2.findFundamentalMat(src_pts, dst_pts, cv2.FM_RANSAC, 1e-3)
         matchesMask = mask.ravel().tolist()
         good_matches = list(compress(bi_direction_matches, matchesMask))
     else:
