@@ -46,6 +46,7 @@ if __name__ == "__main__":
     previous_feature_points = FeatureExtraction(left_image, right_image, camera_param)
 
     Transformation_list = np.array([[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0]])
+    T_pre = np.identity(4)
 
     # For the Left and Right Images Dataset
     for ind in range(1, len(left_images)):
@@ -77,10 +78,9 @@ if __name__ == "__main__":
 
         # ############################## Compute Reprojection Error #########################
         pe = PoseEstimator(paired_static_features, camera_param['left_projection'], Transformation_list[ind - 1])
-        T_current = pe.minimize_error()
-        T_current = np.vstack([T_current.reshape(3, 4), [0, 0, 0, 1]])
-        T_pre = np.vstack([T_true[ind - 1].reshape(3, 4), [0, 0, 0, 1]])
+        T_current = pe.minimize_error().reshape(4, 4)
         T_current = T_pre @ T_current
+        T_pre = T_current
         Transformation_list = np.vstack([Transformation_list, T_current[0:3, :].flatten()])
         time.sleep(10)
 

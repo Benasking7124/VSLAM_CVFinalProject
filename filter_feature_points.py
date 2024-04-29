@@ -121,7 +121,6 @@ def FilterFeaturePoints(left_boxes, right_boxes, feature_points, num_clusters = 
     dynamic_feature_points.bbox_id = np.empty([0, 1])
 
     # For every Bbox ID
-    print(points_inside_bbox.bbox_id)
     for bbox_id in range(len(np.unique(points_inside_bbox.bbox_id))):
 
         # Initialise List to Store Feature Depths and Coordinates
