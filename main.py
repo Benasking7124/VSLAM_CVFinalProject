@@ -76,13 +76,19 @@ if __name__ == "__main__":
         paired_static_features = FrameMatching(previous_feature_points, feature_points)
         previous_feature_points = feature_points
 
-        # ############################## Compute Reprojection Error #########################
+        ############# Compute Transformation matrix of Camera onto Next Frame ###############
+        # Compute the Reprojection Error
         pe = PoseEstimator(paired_static_features, camera_param['left_projection'], Transformation_list[ind - 1])
+        
+        # Minimise the Reprojection Error
         T_current = pe.minimize_error().reshape(4, 4)
+        
+        # Compute the Transformation of Current frame with respect to Previous frame
         T_current = T_pre @ T_current
         T_pre = T_current
+        
+        # Stack the Transformation matrices
         Transformation_list = np.vstack([Transformation_list, T_current[0:3, :].flatten()])
-        time.sleep(10)
 
-
+    # Draw the Final Trajectory
     DrawTrajectory(Transformation_list)

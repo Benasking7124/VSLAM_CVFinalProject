@@ -155,5 +155,3 @@ def PerformKL(left_image, right_image, potential_dynamic_feature_points):
         visulizations.visualize_KL(next_left_image, next_left_image, predicted_list, current_2ds, kl_values, left_boxes, left_boxes, 
                                    font_size=5, pic_title='Compare Predicted Fpts in T1 & Observed Fpts in T1')
         
-
-        print()
