@@ -70,7 +70,7 @@ if __name__ == "__main__":
     # Set up Camera Pose List
     Transformation_list = np.array([[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0]])
 
-    for ind in range(1, len(left_images)):
+    for ind in range(1, len(left_images)-1):
 
         left_image = cv2.imread(left_images[ind])
         right_image = cv2.imread(right_images[ind])
@@ -88,25 +88,32 @@ if __name__ == "__main__":
 
 
         # ############################## Compute Reprojection Error #########################
-        pe = PoseEstimator(paired_static_features, camera_param['left_projection'], T_true[ind - 1])
+        # pe = PoseEstimator(paired_static_features, camera_param['left_projection'], T_true[ind - 1])
+        pe = PoseEstimator(paired_static_features, camera_param['left_projection'], Transformation_list[ind - 1])
         # pe.ComputeReprojError(T_true[ind])
-        T_current = pe.minimize_error()
-        # print("Cal: ", pe.ComputeReprojError(T_current))
-        # print("True: ", pe.ComputeReprojError(np.vstack([T_true[ind].reshape(3, 4), [0, 0, 0, 1]]).flatten()))
-        a = T_current.reshape(4, 4)
-        print(a)
-        print("------------")
-        b = np.vstack([T_true[ind].reshape(3, 4), [0, 0, 0, 1]])
-        print(b)
-        print(np.linalg.inv(b))
+        dof = pe.minimize_error()
+        T_current = pe.convert2T(dof)
+        print("Cal: ", sum(pe.ComputeReprojError(dof)))
+        dof_true = pe.convert2dof(np.vstack([T_true[ind].reshape(3, 4), [0, 0, 0, 1]]))
+        print("True: ", sum(pe.ComputeReprojError(dof_true)))
+        # a = T_current.reshape(4, 4)
+        # print(a)
+        # print("------------")
+        # b = np.vstack([T_true[ind].reshape(3, 4), [0, 0, 0, 1]])
+        # print(b)
+        # print(np.linalg.inv(b))
         # T_current = np.vstack([T_current.reshape(3, 4), [0, 0, 0, 1]])
         # T_pre = np.vstack([T_true[ind - 1].reshape(3, 4), [0, 0, 0, 1]])
-        T_pre = np.vstack([Transformation_list[ind - 1].reshape(3, 4), [0, 0, 0, 1]])
-        T_current = T_pre @ T_current.reshape(4, 4)
+        # T_pre = np.vstack([Transformation_list[ind - 1].reshape(3, 4), [0, 0, 0, 1]])
+        # T_current = T_pre @ T_current.reshape(4, 4)
         Transformation_list = np.vstack([Transformation_list, T_current[0:3, :].flatten()])
 
     # # Plot the error between ground truth and calculated
     # error = np.linalg.norm((T_true[0:11] - Transformation_list), axis=1)
     # print(error)
-    print(Transformation_list[:,11])
-    DrawTrajectory(Transformation_list)
+    # print(Transformation_list[:,11])
+    # DrawTrajectory(Transformation_list)
+    # DrawTrajectory(T_true[:11])
+    plt.plot(Transformation_list[:len(left_images), 11])
+    plt.plot(T_true[:len(left_images), 11])
+    plt.show()

@@ -14,31 +14,31 @@ from draw_trajectory import DrawTrajectory
 import cv2
 import os
 import numpy as np
-import time
+import matplotlib.pyplot as plt
 
 
 # Define Dataset Folder
-dataset = './Dataset_3'
+DATASET = './Dataset_4'
 
 # Define Main Function
 if __name__ == "__main__":
 
     # Read Calib File
-    camera_param = ReadCameraParam(dataset + '/calib.txt')
-    T_true_path = dataset + '/true_T.txt'
+    camera_param = ReadCameraParam(DATASET + '/calib.txt')
+    T_true_path = DATASET + '/true_T.txt'
     T_true = np.loadtxt(T_true_path, dtype=np.float64)
 
     # Get the Folders for Left & Right Stereo Images
-    left_images_folder = dataset + '/Left_Images/'
-    right_images_folder = dataset + '/Right_Images/'
+    left_images_folder = DATASET + '/Left_Images/'
+    right_images_folder = DATASET + '/Right_Images/'
 
     # Get the Images Path list
     left_images = sorted(os.listdir(left_images_folder))
     right_images = sorted(os.listdir(right_images_folder))
 
     # Get the Path of Images
-    left_images = [os.path.abspath(left_images_folder + '/' + left_image) for left_image in left_images][-5:]
-    right_images = [os.path.abspath(right_images_folder + '/' + right_image) for right_image in right_images][-5:]
+    left_images = [os.path.abspath(left_images_folder + '/' + left_image) for left_image in left_images]
+    right_images = [os.path.abspath(right_images_folder + '/' + right_image) for right_image in right_images]
 
     # Read the First Frame of Left and Right Images
     left_image = cv2.imread(left_images[0])
@@ -46,10 +46,9 @@ if __name__ == "__main__":
     previous_feature_points = FeatureExtraction(left_image, right_image, camera_param)
 
     Transformation_list = np.array([[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0]])
-    T_pre = np.identity(4)
 
     # For the Left and Right Images Dataset
-    for ind in range(1, len(left_images)):
+    for ind in range(1, len(left_images)-1):
 
         ####################### Preprocess the Images #######################
         # Read the Images
@@ -74,21 +73,24 @@ if __name__ == "__main__":
 
         ############################## Match Feature Between Frames #########################
         paired_static_features = FrameMatching(previous_feature_points, feature_points)
+        print("Number of pairs: ", paired_static_features.shape[0])
         previous_feature_points = feature_points
 
         ############# Compute Transformation matrix of Camera onto Next Frame ###############
         # Compute the Reprojection Error
-        pe = PoseEstimator(paired_static_features, camera_param['left_projection'], Transformation_list[ind - 1])
+        pe = PoseEstimator(paired_static_features, camera_param['left_projection'], Transformation_list[ind - 1])        
         
         # Minimise the Reprojection Error
-        T_current = pe.minimize_error().reshape(4, 4)
-        
-        # Compute the Transformation of Current frame with respect to Previous frame
-        T_current = T_pre @ T_current
-        T_pre = T_current
+        dof = pe.minimize_error()
+        T_current = pe.convert2T(dof)
+        print("Cal: ", sum(pe.ComputeReprojError(dof)))
+        dof_true = pe.convert2dof(np.vstack([T_true[ind].reshape(3, 4), [0, 0, 0, 1]]))
+        print("True: ", sum(pe.ComputeReprojError(dof_true)))
         
         # Stack the Transformation matrices
         Transformation_list = np.vstack([Transformation_list, T_current[0:3, :].flatten()])
 
     # Draw the Final Trajectory
-    DrawTrajectory(Transformation_list)
+    plt.plot(Transformation_list[:len(left_images), 11])
+    plt.plot(T_true[:len(left_images), 11])
+    plt.show()

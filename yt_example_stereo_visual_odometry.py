@@ -412,7 +412,7 @@ class VisualOdometry():
 
 
 def main():
-    data_dir = './Dataset_3'  # Try KITTI_sequence_2
+    data_dir = './Dataset_2'  # Try KITTI_sequence_2
     vo = VisualOdometry(data_dir)
 
     # play_trip(vo.images_l, vo.images_r)  # Comment out to not play the trip
@@ -420,7 +420,7 @@ def main():
     gt_path = []
     estimated_path = []
     for i, gt_pose in enumerate(tqdm(vo.gt_poses, unit="poses")):
-        if i > 10:
+        if i > 100:
             break
         if i < 1:
             cur_pose = gt_pose

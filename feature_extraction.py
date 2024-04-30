@@ -86,7 +86,7 @@ def FeatureExtraction(left_img, right_img, camera_param):
 
     # Determine Number of Feature Points
     feature_points.num_fp = int(feature_points.left_pts.shape[0])
-    print('Number of matches', feature_points.num_fp)
+    # print('Number of matches', feature_points.num_fp)
 
     # Return the Feature Points
     return feature_points
