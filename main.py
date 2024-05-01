@@ -9,13 +9,13 @@ from pose_estimator import PoseEstimator
 from bounding_box_association import BoundingBoxAssociation
 from display_images import DisplayImages
 from draw_trajectory import DrawTrajectory
+import visulizations
 
 # Import Necessary Libraries
 import cv2
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-
 
 # Define Dataset Folder
 DATASET = './Dataset_4'
@@ -43,12 +43,21 @@ if __name__ == "__main__":
     # Read the First Frame of Left and Right Images
     left_image = cv2.imread(left_images[0])
     right_image = cv2.imread(right_images[0])
-    previous_feature_points = FeatureExtraction(left_image, right_image, camera_param)
 
-    Transformation_list = np.array([[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0]])
+    left_boxes, right_boxes = PerformYolo(left_image, right_image)
+
+    previous_feature_points = FeatureExtraction(left_image, right_image, camera_param)
+    previous_static_feature_points, previous_dynamic_feature_points = FilterFeaturePoints(left_boxes, right_boxes, previous_feature_points, 
+                                                                        use_kmeans = False, num_clusters = 2)
+
+
+    # Transformation_list = np.array([[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0]])
+    Transformation_list = np.array([T_true[0]])
+
 
     # For the Left and Right Images Dataset
     for ind in range(1, len(left_images)-1):
+        print(f"Image {ind-1} to Image {ind}")
 
         ####################### Preprocess the Images #######################
         # Read the Images
@@ -63,34 +72,98 @@ if __name__ == "__main__":
         feature_points = FeatureExtraction(left_image, right_image, camera_param)
 
         ######################## Remove Static Features using Depth map ################
-        static_feature_points, dynamic_feature_points = FilterFeaturePoints(left_boxes, right_boxes, feature_points, use_kmeans = False, num_clusters = 2)
+        static_feature_points, dynamic_feature_points = FilterFeaturePoints(left_boxes, right_boxes, 
+                                                                            feature_points, use_kmeans = False, 
+                                                                            num_clusters = 2)
 
         ###################### Perform Bounding Box Association ########################
-        #associated_bounding_boxes = BoundingBoxAssociation(left_boxes, right_boxes, dynamic_feature_points)
+        # associated_bounding_boxes = BoundingBoxAssociation(left_boxes, right_boxes, dynamic_feature_points)
 
         ############################## Display both the Images #########################
-        DisplayImages(left_image, right_image, left_boxes, right_boxes, static_feature_points, dynamic_feature_points)
+        # DisplayImages(left_image, right_image, left_boxes, right_boxes, static_feature_points, dynamic_feature_points)
 
         ############################## Match Feature Between Frames #########################
-        paired_static_features = FrameMatching(previous_feature_points, feature_points)
-        print("Number of pairs: ", paired_static_features.shape[0])
-        previous_feature_points = feature_points
+
+        paired_static_features_current_2d_previous_3d, paired_static_features_current_2d_previous_2d = \
+            FrameMatching(previous_static_feature_points, static_feature_points)
+        
+        # Visualize mathching points between two time frames
+        fig = visulizations.draw_features_on_image_vertical(cv2.imread(left_images[ind-1]), 
+                                                      cv2.imread(left_images[ind]), 
+                                                      paired_static_features_current_2d_previous_2d[:, 2:],
+                                                      paired_static_features_current_2d_previous_2d[:, :2],
+                                                      pic_title='')
+        plt.pause(0.2)
+        plt.close()
+
+        previous_static_feature_points = static_feature_points
 
         ############# Compute Transformation matrix of Camera onto Next Frame ###############
         # Compute the Reprojection Error
-        pe = PoseEstimator(paired_static_features, camera_param['left_projection'], Transformation_list[ind - 1])        
+
+        min_error = float('inf')
+        list_errors = []
+        list_T = []
+
+        for _ in range(1000):
+
+            sample_idx = np.random.choice(range(paired_static_features_current_2d_previous_3d.shape[0]), 50)
         
-        # Minimise the Reprojection Error
-        dof = pe.minimize_error()
-        T_current = pe.convert2T(dof)
-        print("Cal: ", sum(pe.ComputeReprojError(dof)))
+            pe = PoseEstimator(paired_static_features_current_2d_previous_3d[sample_idx], camera_param['left_projection'], Transformation_list[ind - 1])        
+            dof = pe.minimize_error()
+
+            T_current = pe.convert2T(dof)
+
+            error_now = np.sum(np.linalg.norm(pe.ComputeReprojError(dof)))
+
+            list_errors.append(error_now)
+            list_T.append(T_current)
+
+
+        print('Minimum error we got is', min(list_errors))
+
+
+        min_error = np.argmin(list_errors)
+        T_current = list_T[min_error]
         dof_true = pe.convert2dof(np.vstack([T_true[ind].reshape(3, 4), [0, 0, 0, 1]]))
-        print("True: ", sum(pe.ComputeReprojError(dof_true)))
-        
-        # Stack the Transformation matrices
         Transformation_list = np.vstack([Transformation_list, T_current[0:3, :].flatten()])
 
-    # Draw the Final Trajectory
-    plt.plot(Transformation_list[:len(left_images), 11])
-    plt.plot(T_true[:len(left_images), 11])
-    plt.show()
+
+        # Draw the Final Trajectory
+        plt.plot(Transformation_list[:len(left_images), 11])
+        plt.plot(T_true[:ind+1, 11])
+        
+        if ind!=len(left_images)-2:
+            plt.pause(0.2)
+            plt.close()
+        else:
+            plt.show()
+
+        matrices_ours = Transformation_list.reshape(-1, 3, 4)
+
+        # Extract the translation components (x, y) from the last column of the [3, 4] matrices_ours
+        x_coords_ours = [mat[0, 3] for mat in matrices_ours]
+        y_coords_ours = [mat[2, 3] for mat in matrices_ours]
+
+        matrices_true = T_true[:ind+1].reshape(-1, 3, 4)
+
+        # Extract the translation components (x, y) from the last column of the [3, 4] matrices_true
+        x_coords_true = [mat[0, 3] for mat in matrices_true]
+        y_coords_true = [mat[2, 3] for mat in matrices_true]
+
+        # Plotting the trajectory in 2D
+        plt.figure(figsize=(8, 6))
+        plt.plot(x_coords_ours, y_coords_ours, marker='o', linestyle='-', color='b')
+        plt.plot(x_coords_true, y_coords_true, marker='o', linestyle='-', color='r')
+
+        plt.title('2D Trajectory of the Camera (Ignoring Height)')
+        plt.xlabel('X Coordinate')
+        plt.ylabel('Y Coordinate')
+        plt.grid(True)
+        plt.axis('equal')  # Keeps the scale of x and y the same
+        
+        if ind!=len(left_images)-2:
+            plt.pause(0.2)
+            plt.close()
+        else:
+            plt.show()

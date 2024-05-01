@@ -21,10 +21,12 @@ def DisplayImages(left_image, right_image, left_boxes, right_boxes, static_featu
     
     # Display Bounding Boxes on Left & Right Image
     color_index = 0
-    for left_bbox, right_bbox in zip(left_boxes, right_boxes):
+    for left_bbox in left_boxes:
         left_x1, left_y1, left_x2, left_y2 = left_bbox[0], left_bbox[1], left_bbox[2], left_bbox[3]
-        right_x1, right_y1, right_x2, right_y2 = right_bbox[0], right_bbox[1], right_bbox[2], right_bbox[3]
         cv2.rectangle(left_image, (left_x1, left_y1), (left_x2, left_y2), colors[color_index], 2)
+
+    for right_bbox in right_boxes:
+        right_x1, right_y1, right_x2, right_y2 = right_bbox[0], right_bbox[1], right_bbox[2], right_bbox[3]
         cv2.rectangle(right_image, (right_x1, right_y1), (right_x2, right_y2), colors[color_index], 2)
 
     # Display Static Feature Points on Both Images using Red Color
