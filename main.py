@@ -56,7 +56,8 @@ if __name__ == "__main__":
 
 
     # For the Left and Right Images Dataset
-    for ind in range(1, len(left_images)-1):
+    for ind in range(1, len(left_images) - 1):
+        
         print(f"Image {ind-1} to Image {ind}")
 
         ####################### Preprocess the Images #######################
@@ -167,3 +168,8 @@ if __name__ == "__main__":
             plt.close()
         else:
             plt.show()
+            
+        eval = 0
+        for coord in range(len(x_coords_true)):
+            eval = eval + np.linalg.norm([x_coords_true[coord] - x_coords_ours[coord], y_coords_true[coord] - y_coords_ours[coord]])
+        print("The Error between True Trajectory and Calculated Trajectory is ", eval)
