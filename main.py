@@ -176,9 +176,9 @@ if __name__ == "__main__":
         print("The Error between True Trajectory and Calculated Trajectory is ", eval)
 
     # Evaluation
-    ate_error = compute_ate(T_true, Transformation_list)
-    rpe_error_t = compute_rpe_t(T_true, Transformation_list)
-    rpe_error_R = compute_rpe_R(T_true, Transformation_list)
+    ate_error = compute_ate(T_true[:len(left_images)-1], Transformation_list)
+    rpe_error_t = compute_rpe_t(T_true[:len(left_images)-1], Transformation_list)
+    rpe_error_R = compute_rpe_R(T_true[:len(left_images)-1], Transformation_list)
 
     print("The ATE error: ", ate_error)
     print("The RPE_t error: ", rpe_error_t)
