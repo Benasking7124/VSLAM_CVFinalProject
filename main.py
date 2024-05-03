@@ -9,6 +9,7 @@ from pose_estimator import PoseEstimator
 from bounding_box_association import BoundingBoxAssociation
 from display_images import DisplayImages
 from draw_trajectory import DrawTrajectory
+from evaluation import compute_ate, compute_rpe_t, compute_rpe_R
 import visulizations
 
 # Import Necessary Libraries
@@ -173,3 +174,12 @@ if __name__ == "__main__":
         for coord in range(len(x_coords_true)):
             eval = eval + np.linalg.norm([x_coords_true[coord] - x_coords_ours[coord], y_coords_true[coord] - y_coords_ours[coord]])
         print("The Error between True Trajectory and Calculated Trajectory is ", eval)
+
+    # Evaluation
+    ate_error = compute_ate(T_true, Transformation_list)
+    rpe_error_t = compute_rpe_t(T_true, Transformation_list)
+    rpe_error_R = compute_rpe_R(T_true, Transformation_list)
+
+    print("The ATE error: ", ate_error)
+    print("The RPE_t error: ", rpe_error_t)
+    print("The RPE_R error: ", rpe_error_R)
