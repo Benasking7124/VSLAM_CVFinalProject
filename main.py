@@ -170,11 +170,6 @@ if __name__ == "__main__":
         else:
             plt.show()
             
-        eval = 0
-        for coord in range(len(x_coords_true)):
-            eval = eval + np.linalg.norm([x_coords_true[coord] - x_coords_ours[coord], y_coords_true[coord] - y_coords_ours[coord]])
-        print("The Error between True Trajectory and Calculated Trajectory is ", eval)
-
     # Evaluation
     ate_error = compute_ate(T_true[:len(left_images)-1], Transformation_list)
     rpe_error_t = compute_rpe_t(T_true[:len(left_images)-1], Transformation_list)
