@@ -9,7 +9,7 @@ from pose_estimator import PoseEstimator
 from bounding_box_association import BoundingBoxAssociation
 from display_images import DisplayImages
 from draw_trajectory import DrawTrajectory
-from evaluation import compute_ate, compute_rpe_t, compute_rpe_R
+from evaluation import compute_ate_t, compute_ate_R, compute_rpe_t, compute_rpe_R
 import visulizations
 
 # Import Necessary Libraries
@@ -19,7 +19,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Define Dataset Folder
-DATASET = './Dataset_4'
+DATASET = './Dataset_00'
 
 # Define Main Function
 if __name__ == "__main__":
@@ -54,6 +54,8 @@ if __name__ == "__main__":
 
     # Transformation_list = np.array([[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0]])
     Transformation_list = np.array([T_true[0]])
+    Yaw_list = np.empty([0, 1])
+    true_Yaw = np.empty([0, 1])
 
 
     # For the Left and Right Images Dataset
@@ -131,9 +133,29 @@ if __name__ == "__main__":
         Transformation_list = np.vstack([Transformation_list, T_current[0:3, :].flatten()])
 
 
-        # Draw the Final Trajectory
-        plt.plot(Transformation_list[:len(left_images), 11])
-        plt.plot(T_true[:ind+1, 11])
+        # Draw the Final Trajectory Z
+        # plt.plot(Transformation_list[:len(left_images), 11])
+        # plt.plot(T_true[:ind+1, 11])
+        
+        # if ind!=len(left_images)-2:
+        #     plt.pause(0.2)
+        #     plt.close()
+        # else:
+        #     plt.show()
+
+        # Draw the Final Trajectory Yaw
+        angles, _ = cv2.Rodrigues(T_current[0:3, 0:3])
+        Yaw_list = np.vstack([Yaw_list, angles[1]])
+
+        true_angles, _ = cv2.Rodrigues(T_true[ind].reshape(3, 4)[0:3, 0:3])
+        true_Yaw = np.vstack([true_Yaw, true_angles[1]])
+
+        plt.plot(Yaw_list[:len(left_images)])
+        plt.plot(true_Yaw[:ind+1])
+        plt.title('Yaw angle of the Camera')
+        plt.xlabel('Frame')
+        plt.ylabel('Yaw Angle(rad)')
+        plt.legend(['Our Estimation', 'Ground Truth'])
         
         if ind!=len(left_images)-2:
             plt.pause(0.2)
@@ -159,10 +181,11 @@ if __name__ == "__main__":
         plt.plot(x_coords_true, y_coords_true, marker='o', linestyle='-', color='r')
 
         plt.title('2D Trajectory of the Camera (Ignoring Height)')
-        plt.xlabel('X Coordinate')
-        plt.ylabel('Y Coordinate')
+        plt.xlabel('X Coordinate (m)')
+        plt.ylabel('Y Coordinate (m)')
         plt.grid(True)
         plt.axis('equal')  # Keeps the scale of x and y the same
+        plt.legend(['Our Estimation', 'Ground Truth'])
         
         if ind!=len(left_images)-2:
             plt.pause(0.2)
@@ -171,10 +194,12 @@ if __name__ == "__main__":
             plt.show()
             
     # Evaluation
-    ate_error = compute_ate(T_true[:len(left_images)-1], Transformation_list)
+    ate_error_t = compute_ate_t(T_true[:len(left_images)-1], Transformation_list)
+    ate_error_R = compute_ate_R(T_true[:len(left_images)-1], Transformation_list)
     rpe_error_t = compute_rpe_t(T_true[:len(left_images)-1], Transformation_list)
     rpe_error_R = compute_rpe_R(T_true[:len(left_images)-1], Transformation_list)
 
-    print("The ATE error: ", ate_error)
+    print("The ATE_t error: ", ate_error_t)
+    print("The ATE_R error: ", ate_error_R)
     print("The RPE_t error: ", rpe_error_t)
     print("The RPE_R error: ", rpe_error_R)
