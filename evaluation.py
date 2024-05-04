@@ -30,8 +30,8 @@ def compute_ate_R(gt_poses, est_poses):
         r_est = np.vstack([r_est, ri_est[1]])
 
     absolute_errors = np.linalg.norm(r_gt[:] - r_est[:], axis=1)
-    rpe = np.mean(absolute_errors)
-    return rpe
+    ate = np.mean(absolute_errors)
+    return ate
 
 def compute_rpe_t(gt_poses, est_poses):
     """
