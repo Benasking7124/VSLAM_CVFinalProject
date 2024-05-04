@@ -19,7 +19,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Define Dataset Folder
-DATASET = './Dataset_00'
+DATASET = './Dataset_10'
 
 # Define Main Function
 if __name__ == "__main__":
