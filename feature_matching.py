@@ -30,10 +30,21 @@ def FeatureMatching(keypoints1, descriptors1, keypoints2, descrptors2):
     flann = cv2.FlannBasedMatcher(index_params, search_params)
 
     # Matching from 1 to 2
-    matches_1_2 = flann.knnMatch(descriptors1, descrptors2, k = 2)
+    if(descriptors1 is not None and len(descriptors1)>2 and descrptors2 is not None and len(descrptors2)>2):
+
+        matches_1_2 = flann.knnMatch(descriptors1, descrptors2, k = 2)
+    else:
+        good_matches = []
+        return good_matches
     
     # Matching from 1 to 2
-    matches_2_1 = flann.knnMatch(descrptors2, descriptors1, k = 2)
+    if(descriptors1 is not None and len(descriptors1)>2 and descrptors2 is not None and len(descrptors2)>2):
+
+        matches_2_1 = flann.knnMatch(descrptors2, descriptors1, k = 2)
+
+    else:
+        good_matches = []
+        return good_matches
 
     # ------ Some of matches desc1->desc2 or desc2->desc1 are tuple (length 0 or length 1) which means not pair... --
     # ------ Code block below detect such cases and save in the list for deleting -----------------------------------

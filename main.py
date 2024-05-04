@@ -1,3 +1,4 @@
+#%%
 # Import Necessary Modules
 from read_camera_param import ReadCameraParam
 from perform_yolo import PerformYolo
@@ -11,6 +12,7 @@ from display_images import DisplayImages
 from draw_trajectory import DrawTrajectory
 from evaluation import compute_ate_t, compute_ate_R, compute_rpe_t, compute_rpe_R
 import visulizations
+import perform_KL
 
 # Import Necessary Libraries
 import cv2
@@ -23,6 +25,10 @@ DATASET = './Dataset_00'
 
 # Define Main Function
 if __name__ == "__main__":
+
+    # perform_kl == 0 : SLAM without KL
+    # perorm_kl == 1: SLAM with KL
+    perform_kl = 1
 
     # Read Calib File
     camera_param = ReadCameraParam(DATASET + '/calib.txt')
@@ -52,8 +58,9 @@ if __name__ == "__main__":
                                                                         use_kmeans = False, num_clusters = 2)
 
 
-    # Transformation_list = np.array([[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0]])
     Transformation_list = np.array([T_true[0]])
+    Transformation_list_with_dynamic = np.array([T_true[0]])
+
     Yaw_list = np.empty([0, 1])
     true_Yaw = np.empty([0, 1])
 
@@ -80,6 +87,7 @@ if __name__ == "__main__":
                                                                             feature_points, use_kmeans = False, 
                                                                             num_clusters = 2)
 
+        
         ###################### Perform Bounding Box Association ########################
         # associated_bounding_boxes = BoundingBoxAssociation(left_boxes, right_boxes, dynamic_feature_points)
 
@@ -88,60 +96,119 @@ if __name__ == "__main__":
 
         ############################## Match Feature Between Frames #########################
 
+
+        paired_poten_dy_fpts_cur_2d_pre_3d, paired_poten_dy_fpts_cur_2d_pre_2d \
+            = FrameMatching(previous_dynamic_feature_points, dynamic_feature_points)
+
+
         paired_static_features_current_2d_previous_3d, paired_static_features_current_2d_previous_2d = \
             FrameMatching(previous_static_feature_points, static_feature_points)
         
-        # Visualize mathching points between two time frames
-        fig = visulizations.draw_features_on_image_vertical(cv2.imread(left_images[ind-1]), 
-                                                      cv2.imread(left_images[ind]), 
-                                                      paired_static_features_current_2d_previous_2d[:, 2:],
-                                                      paired_static_features_current_2d_previous_2d[:, :2],
-                                                      pic_title='')
-        plt.pause(0.2)
-        plt.close()
 
         previous_static_feature_points = static_feature_points
 
-        ############# Compute Transformation matrix of Camera onto Next Frame ###############
-        # Compute the Reprojection Error
-
-        min_error = float('inf')
-        list_errors = []
-        list_T = []
-
-        for _ in range(1000):
-
-            sample_idx = np.random.choice(range(paired_static_features_current_2d_previous_3d.shape[0]), 50)
-        
-            pe = PoseEstimator(paired_static_features_current_2d_previous_3d[sample_idx], camera_param['left_projection'], Transformation_list[ind - 1])        
-            dof = pe.minimize_error()
-
-            T_current = pe.convert2T(dof)
-
-            error_now = np.sum(np.linalg.norm(pe.ComputeReprojError(dof)))
-
-            list_errors.append(error_now)
-            list_T.append(T_current)
+        ############# Compute Transformation matrix of Camera onto Next Frame (Before KL & aftrer KL)###############
 
 
-        print('Minimum error we got is', min(list_errors))
+        if perform_kl == 1:
+
+            dynamic_included = 0
+
+            while dynamic_included < 2:
+
+                min_error = float('inf')
+                list_errors = []
+                list_T = []
+
+                if dynamic_included == 1:
+                    if more_static_points.shape[0]!=0:
+                        paired_static_features_current_2d_previous_3d = np.vstack((paired_static_features_current_2d_previous_3d, more_static_points))
+
+                
+                for _ in range(1000):
+                    
+                    sample_idx = np.random.choice(range(paired_static_features_current_2d_previous_3d.shape[0]), 50)
+                
+                    pe = PoseEstimator(paired_static_features_current_2d_previous_3d[sample_idx], camera_param['left_projection'], Transformation_list[ind - 1])        
+                    dof = pe.minimize_error()
+
+                    T_current = pe.convert2T(dof)
+
+                    error_now = np.sum(np.linalg.norm(pe.ComputeReprojError(dof)))
+
+                    list_errors.append(error_now)
+                    list_T.append(T_current)
 
 
-        min_error = np.argmin(list_errors)
-        T_current = list_T[min_error]
-        dof_true = pe.convert2dof(np.vstack([T_true[ind].reshape(3, 4), [0, 0, 0, 1]]))
-        Transformation_list = np.vstack([Transformation_list, T_current[0:3, :].flatten()])
+                if dynamic_included == 0:
+
+                    print('num candidates fpts before KL for RANSAC is', paired_static_features_current_2d_previous_3d.shape[0])
+
+                    min_error = np.argmin(list_errors)
+                    T_current = list_T[min_error]
+                    dof_true = pe.convert2dof(np.vstack([T_true[ind].reshape(3, 4), [0, 0, 0, 1]]))
+                    Transformation_list = np.vstack([Transformation_list, T_current[0:3, :].flatten()])
+                    
+
+                if dynamic_included == 1:
+
+                    print('num candidates fpts after KL for RANSAC is', paired_static_features_current_2d_previous_3d.shape[0])
+
+                    min_error = np.argmin(list_errors)
+                    T_current = list_T[min_error]
+                    dof_true = pe.convert2dof(np.vstack([T_true[ind].reshape(3, 4), [0, 0, 0, 1]]))
+                    Transformation_list_with_dynamic = np.vstack([Transformation_list_with_dynamic, T_current[0:3, :].flatten()])
+
+                
+                if dynamic_included == 0:
+                    if len(paired_poten_dy_fpts_cur_2d_pre_2d)!=0:
+                        more_static_points = perform_KL.PerformKL(left_images[ind-1], right_images[ind-1], 
+                                            left_images[ind], right_images[ind],
+                                            left_boxes, right_boxes,
+                                            camera_param['left_projection'], 
+                                            Transformation_list[ind-1],
+                                            Transformation_list[ind],
+                                            paired_poten_dy_fpts_cur_2d_pre_2d,
+                                            paired_poten_dy_fpts_cur_2d_pre_3d)
+                        
+                    else:
+                        more_static_points = np.array([])
+                    
+                dynamic_included += 1
+
+            previous_dynamic_feature_points = dynamic_feature_points
 
 
-        # Draw the Final Trajectory Z
-        # plt.plot(Transformation_list[:len(left_images), 11])
-        # plt.plot(T_true[:ind+1, 11])
-        
-        # if ind!=len(left_images)-2:
-        #     plt.pause(0.2)
-        #     plt.close()
-        # else:
-        #     plt.show()
+
+
+        else:
+
+            min_error = float('inf')
+            list_errors = []
+            list_T = []
+
+            print('num candidates fpts before KL for RANSAC is', paired_static_features_current_2d_previous_3d.shape[0])
+
+            for _ in range(1000):
+                
+                sample_idx = np.random.choice(range(paired_static_features_current_2d_previous_3d.shape[0]), 50)
+            
+                pe = PoseEstimator(paired_static_features_current_2d_previous_3d[sample_idx], camera_param['left_projection'], Transformation_list[ind - 1])        
+                dof = pe.minimize_error()
+
+                T_current = pe.convert2T(dof)
+
+                error_now = np.sum(np.linalg.norm(pe.ComputeReprojError(dof)))
+
+                list_errors.append(error_now)
+                list_T.append(T_current)
+
+
+            min_error = np.argmin(list_errors)
+            T_current = list_T[min_error]
+            dof_true = pe.convert2dof(np.vstack([T_true[ind].reshape(3, 4), [0, 0, 0, 1]]))
+            Transformation_list = np.vstack([Transformation_list, T_current[0:3, :].flatten()])
+
 
         # Draw the Final Trajectory Yaw
         angles, _ = cv2.Rodrigues(T_current[0:3, 0:3])
@@ -158,18 +225,21 @@ if __name__ == "__main__":
         plt.legend(['Our Estimation', 'Ground Truth'])
         
         if ind!=len(left_images)-2:
-            plt.pause(0.2)
+            plt.pause(2)
             plt.close()
         else:
             plt.show()
-
-        matrices_ours = Transformation_list.reshape(-1, 3, 4)
+        
+        if perform_kl == 1:
+            matrices_ours = Transformation_list_with_dynamic.reshape(-1, 3, 4)
+        else:
+            matrices_ours = Transformation_list.reshape(-1, 3, 4)
 
         # Extract the translation components (x, y) from the last column of the [3, 4] matrices_ours
         x_coords_ours = [mat[0, 3] for mat in matrices_ours]
         y_coords_ours = [mat[2, 3] for mat in matrices_ours]
 
-        matrices_true = T_true[:ind+1].reshape(-1, 3, 4)
+        matrices_true = T_true[:+ind+1].reshape(-1, 3, 4)
 
         # Extract the translation components (x, y) from the last column of the [3, 4] matrices_true
         x_coords_true = [mat[0, 3] for mat in matrices_true]
@@ -188,7 +258,7 @@ if __name__ == "__main__":
         plt.legend(['Our Estimation', 'Ground Truth'])
         
         if ind!=len(left_images)-2:
-            plt.pause(0.2)
+            plt.pause(2)
             plt.close()
         else:
             plt.show()
@@ -203,3 +273,4 @@ if __name__ == "__main__":
     print("The ATE_R error: ", ate_error_R)
     print("The RPE_t error: ", rpe_error_t)
     print("The RPE_R error: ", rpe_error_R)
+
