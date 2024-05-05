@@ -20,8 +20,8 @@ def check_point_in_bbox(bbox, point):
         return False
 
 
-# Define a Function to Filter Feature Points by Depth using K-Means or Depth Threshold
-def FilterFeaturePoints(left_boxes, right_boxes, feature_points, use_kmeans, num_clusters):
+# Define a Function to Filter Feature Points
+def FilterFeaturePoints(left_boxes, right_boxes, feature_points):
         
     # Initialise Static Feature points
     static_feature_points = FeaturePoints()
