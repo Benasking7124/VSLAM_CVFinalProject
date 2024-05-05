@@ -4,7 +4,7 @@ from read_camera_param import ReadCameraParam
 from perform_yolo import PerformYolo
 from feature_extraction import FeatureExtraction
 from feature_extraction import FeatureExtraction
-from filter_feature_points import FilterFeaturePoints
+from filter_feature_points import FilterFeaturePoints_for_k_means, FilterFeaturePoints_for_kl
 from frame_matching import FrameMatching
 from pose_estimator import PoseEstimator
 from bounding_box_association import BoundingBoxAssociation
@@ -54,7 +54,7 @@ if __name__ == "__main__":
     left_boxes, right_boxes = PerformYolo(left_image, right_image)
 
     previous_feature_points = FeatureExtraction(left_image, right_image, camera_param)
-    previous_static_feature_points, previous_dynamic_feature_points = FilterFeaturePoints(left_boxes, right_boxes, previous_feature_points, 
+    previous_static_feature_points, previous_dynamic_feature_points = FilterFeaturePoints_for_kl(left_boxes, right_boxes, previous_feature_points, 
                                                                         use_kmeans = False, num_clusters = 2)
 
 
@@ -83,7 +83,10 @@ if __name__ == "__main__":
         feature_points = FeatureExtraction(left_image, right_image, camera_param)
 
         ######################## Remove Static Features using Depth map ################
-        static_feature_points, dynamic_feature_points = FilterFeaturePoints(left_boxes, right_boxes, feature_points)
+
+        static_feature_points, dynamic_feature_points = FilterFeaturePoints_for_kl(left_boxes, right_boxes, 
+                                                                            feature_points, use_kmeans = False, 
+                                                                            num_clusters = 2)
 
         
         ###################### Perform Bounding Box Association ########################
