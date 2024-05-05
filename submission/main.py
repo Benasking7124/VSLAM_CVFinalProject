@@ -2,10 +2,12 @@
 from read_camera_param import ReadCameraParam
 from perform_yolo import PerformYolo
 from feature_extraction import FeatureExtraction
-from filter_feature_points import FilterFeaturePoints
+from filter_feature_points import FilterFeaturePoints_for_kl
 from frame_matching import FrameMatching
 from pose_estimator import PoseEstimator
+# from display_images import DisplayImages
 from evaluation import compute_ate_t, compute_ate_R, compute_rpe_t, compute_rpe_R
+import visulizations
 import perform_KL
 
 # Import Necessary Libraries
@@ -48,7 +50,7 @@ if __name__ == "__main__":
     left_boxes, right_boxes = PerformYolo(left_image, right_image)
 
     previous_feature_points = FeatureExtraction(left_image, right_image, camera_param)
-    previous_static_feature_points, previous_dynamic_feature_points = FilterFeaturePoints(left_boxes, right_boxes, previous_feature_points, 
+    previous_static_feature_points, previous_dynamic_feature_points = FilterFeaturePoints_for_kl(left_boxes, right_boxes, previous_feature_points, 
                                                                         use_kmeans = False, num_clusters = 2)
 
 
@@ -77,9 +79,14 @@ if __name__ == "__main__":
         feature_points = FeatureExtraction(left_image, right_image, camera_param)
 
         ######################## Remove Static Features using Depth map ################
-        static_feature_points, dynamic_feature_points = FilterFeaturePoints(left_boxes, right_boxes, 
+
+        static_feature_points, dynamic_feature_points = FilterFeaturePoints_for_kl(left_boxes, right_boxes, 
                                                                             feature_points, use_kmeans = False, 
                                                                             num_clusters = 2)
+
+
+        ############################## Display both the Images #########################
+        # DisplayImages(left_image, right_image, left_boxes, right_boxes, static_feature_points, dynamic_feature_points)
 
         ############################## Match Feature Between Frames #########################
 
