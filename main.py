@@ -1,15 +1,11 @@
-#%%
 # Import Necessary Modules
 from read_camera_param import ReadCameraParam
 from perform_yolo import PerformYolo
 from feature_extraction import FeatureExtraction
-from feature_extraction import FeatureExtraction
-from filter_feature_points import FilterFeaturePoints_for_k_means, FilterFeaturePoints_for_kl
+from filter_feature_points import FilterFeaturePoints_for_kl
 from frame_matching import FrameMatching
 from pose_estimator import PoseEstimator
-from bounding_box_association import BoundingBoxAssociation
-from display_images import DisplayImages
-from draw_trajectory import DrawTrajectory
+# from display_images import DisplayImages
 from evaluation import compute_ate_t, compute_ate_R, compute_rpe_t, compute_rpe_R
 import visulizations
 import perform_KL
@@ -88,9 +84,6 @@ if __name__ == "__main__":
                                                                             feature_points, use_kmeans = False, 
                                                                             num_clusters = 2)
 
-        
-        ###################### Perform Bounding Box Association ########################
-        # associated_bounding_boxes = BoundingBoxAssociation(left_boxes, right_boxes, dynamic_feature_points)
 
         ############################## Display both the Images #########################
         # DisplayImages(left_image, right_image, left_boxes, right_boxes, static_feature_points, dynamic_feature_points)
