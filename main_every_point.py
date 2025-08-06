@@ -48,8 +48,8 @@ if __name__ == "__main__":
     left_boxes, right_boxes = PerformYolo(left_image, right_image)
 
     previous_feature_points = FeatureExtraction(left_image, right_image, camera_param)
-    # previous_static_feature_points, previous_dynamic_feature_points = FilterFeaturePoints(left_boxes, right_boxes, previous_feature_points, 
-    #                                                                     use_kmeans = False, num_clusters = 2)
+    previous_static_feature_points, previous_dynamic_feature_points = FilterFeaturePoints(left_boxes, right_boxes, previous_feature_points, 
+                                                                        use_kmeans = False, num_clusters = 2)
 
 
     # Transformation_list = np.array([[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0]])
@@ -76,9 +76,9 @@ if __name__ == "__main__":
         feature_points = FeatureExtraction(left_image, right_image, camera_param)
 
         ######################## Remove Static Features using Depth map ################
-        # static_feature_points, dynamic_feature_points = FilterFeaturePoints(left_boxes, right_boxes, 
-        #                                                                     feature_points, use_kmeans = False, 
-        #                                                                     num_clusters = 2)
+        static_feature_points, dynamic_feature_points = FilterFeaturePoints(left_boxes, right_boxes, 
+                                                                            feature_points, use_kmeans = False, 
+                                                                            num_clusters = 2)
 
         ###################### Perform Bounding Box Association ########################
         # associated_bounding_boxes = BoundingBoxAssociation(left_boxes, right_boxes, dynamic_feature_points)
@@ -89,7 +89,7 @@ if __name__ == "__main__":
         ############################## Match Feature Between Frames #########################
 
         paired_static_features_current_2d_previous_3d, paired_static_features_current_2d_previous_2d = \
-            FrameMatching(feature_points, feature_points)
+            FrameMatching(previous_static_feature_points, static_feature_points)
         
         # Visualize mathching points between two time frames
         fig = visulizations.draw_features_on_image_vertical(cv2.imread(left_images[ind-1]), 
@@ -98,10 +98,10 @@ if __name__ == "__main__":
                                                       paired_static_features_current_2d_previous_2d[:, :2],
                                                       pic_title='')
         plt.pause(0.2)
-        plt.close()
+        plt.show()
 
-        # previous_static_feature_points = static_feature_points
-        previous_feature_points = feature_points
+        previous_static_feature_points = static_feature_points
+        # previous_feature_points = feature_points
 
         ############# Compute Transformation matrix of Camera onto Next Frame ###############
         # Compute the Reprojection Error

@@ -3,8 +3,8 @@ Our report, slides, and all of our code is included within this zip file.
 
 
 # Documents:
-- Computer_Vision_Final_Presentation_Reimplementation_of_Visual_SLAM_in_Dynamic_Environments_Based_on_Object_Detection_and_Scene_Flow.pdf: Presentation
-- Computer_Vision_Final_Report_Reimplementation_of_Visual_SLAM_in_Dynamic_Environments_Based_on_Object_Detection_and_Scene_Flow.pdf: Final report
+- Computer_Vision_Final_Presentation_Visual_SLAM_in_Dynamic_Environments.pdf: Presentation
+- Computer_Vision_Final_Report_Visual_SLAM_in_Dynamic_Environments.pdf: Final report
 
 
 # Precomputed Results:
@@ -32,3 +32,4 @@ Our report, slides, and all of our code is included within this zip file.
 # Data Files
 These files describe the modified data set we used for our project (a subset of KITTI)
 - Dataset_00, Dataset_02, Dataset_05, Dataset_08, Dataset_10: 200 Stereo images, calib.txt having Camera Calibration Parameters, times.txt having Timestamp of every Image frame, true_T.txt having True Transformation Matrices.
+https://drive.google.com/drive/folders/1VZ8ziAKcDwx-yNgG-WEqZBb137yWd0lA?usp=sharing
